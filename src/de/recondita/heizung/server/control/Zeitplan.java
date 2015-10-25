@@ -1,19 +1,26 @@
 package de.recondita.heizung.server.control;
 
 import java.io.Closeable;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import sun.util.calendar.Gregorian;
+import java.util.concurrent.TimeUnit;
 
 public class Zeitplan implements Closeable {
 
+	/**
+	 * Zeiten [wochentag][schaltpunkt] schaltpunkt&1==0 = an !schaltpunkt&1==0 =
+	 * aus
+	 */
 	private LocalTime[][] plan;
 	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
 	private Timer timer = new Timer();
+	private Timer dailyTimer=new Timer();
 
 	public Zeitplan(LocalTime[][] plan, Ventil[] ventile) {
 		this.plan = plan;
@@ -38,23 +45,56 @@ public class Zeitplan implements Closeable {
 	}
 
 	public synchronized void start() {
+		Calendar today = Calendar.getInstance();
+		today.set(Calendar.HOUR_OF_DAY, 2);
+		today.set(Calendar.MINUTE, 0);
+		today.set(Calendar.SECOND, 0);
+		dailyTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				Zeitplan.this.run();
+			}
+		}, today.getTime(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
 		run();
 	}
 
 	@Override
 	public void close() {
 		timer.cancel();
+		dailyTimer.cancel();
 	}
 
-	private void run() {
-		int day=GregorianCalendar.DAY_OF_WEEK;
+	private void setVentile(boolean on) {
+		synchronized (ventile) {
+			for (Ventil v : ventile)
+				v.setPlan(on);
+		}
+	}
+
+	private synchronized void run() {
+		timer.cancel();
+		
+		LocalDate date=LocalDate.now();
+		int day=date.getDayOfWeek().ordinal();
 		LocalTime now = LocalTime.now();
-		
-		//TODO
-		int i=0;
-		while(plan[day][i].compareTo(now)<0&& i<plan[day].length)
-			i++;
+
+		int punkt = -1;
+		for (int i = 0; i < plan[day].length && now.compareTo(plan[day][i]) < 0; i++)
+			punkt = i;
+
+		if (punkt + 1 < plan[day].length)
+		{			
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					Zeitplan.this.run();
+				}
+			}, Date.from(plan[day][punkt + 1].atDate(date).
+			        atZone(ZoneId.systemDefault()).toInstant()));
 			
-		
+		}
+
+		setVentile((punkt & 1) == 0);
+
 	}
 }
