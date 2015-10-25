@@ -29,8 +29,8 @@ public class Zeitplan implements Closeable {
 		return id;
 	}
 
-	public Zeitplan(int id,String name,LocalTime[][] plan) {
-		this.id=id;
+	public Zeitplan(int id, String name, LocalTime[][] plan) {
+		this.id = id;
 		this.setName(name);
 		setPlan(plan);
 	}
@@ -61,9 +61,17 @@ public class Zeitplan implements Closeable {
 		today.set(Calendar.SECOND, 2);
 		dailyTimer = new Timer();
 		dailyTimer.scheduleAtFixedRate(new TimerTask() {
+			long lasttime = -1;
+
 			@Override
 			public void run() {
 				try {
+					synchronized (this) {
+						long time = System.currentTimeMillis();
+						if (time - lasttime < 3600000)
+							return;
+						lasttime = time;
+					}
 					synchronized (Zeitplan.this) {
 						cancelTimerSafe();
 						timer = new Timer(); // vorsichtshalber erneuern
@@ -136,8 +144,7 @@ public class Zeitplan implements Closeable {
 	}
 
 	boolean removeVentil(Ventil v) {
-		synchronized(ventile)
-		{
+		synchronized (ventile) {
 			return ventile.remove(v);
 		}
 	}
