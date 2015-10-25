@@ -50,7 +50,7 @@ public class Zeitplan implements Closeable {
 		Calendar today = Calendar.getInstance();
 		today.set(Calendar.HOUR_OF_DAY, 2);
 		today.set(Calendar.MINUTE, 0);
-		today.set(Calendar.SECOND, 0);
+		today.set(Calendar.SECOND, 2);
 		dailyTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
