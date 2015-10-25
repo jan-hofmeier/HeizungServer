@@ -75,8 +75,7 @@ public class Zeitplan implements Closeable {
 		run();
 	}
 
-	private void cancelTimerSafe()
-	{
+	private void cancelTimerSafe() {
 		if (timer != null)
 			try {
 				timer.cancel();
@@ -84,7 +83,7 @@ public class Zeitplan implements Closeable {
 				e.printStackTrace();
 			}
 	}
-	
+
 	@Override
 	public synchronized void close() {
 		cancelTimerSafe();
@@ -131,8 +130,14 @@ public class Zeitplan implements Closeable {
 
 	}
 
-	private class ZeitplanTask extends TimerTask
-	{
+	public boolean removeVentil(Ventil v) {
+		synchronized(ventile)
+		{
+			return ventile.remove(v);
+		}
+	}
+
+	private class ZeitplanTask extends TimerTask {
 		@Override
 		public void run() {
 			try {
@@ -143,7 +148,7 @@ public class Zeitplan implements Closeable {
 			}
 		}
 	}
-	
+
 	private void logVeryBadException(Exception e) {
 		// TODO
 	}
