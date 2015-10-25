@@ -23,17 +23,14 @@ public class Zeitplan implements Closeable {
 	private Timer dailyTimer;
 	private boolean on = false;
 
-	public Zeitplan(LocalTime[][] plan, Ventil[] ventile) {
-		this.ventile = new ArrayList<Ventil>(ventile.length);
-		for (Ventil ventil : ventile)
-			addVentil(ventil);
+	public Zeitplan(LocalTime[][] plan) {
 		setPlan(plan);
 	}
 
-	public void addVentil(Ventil ventil) {
+	void addVentil(Ventil ventil) {
 		synchronized (ventile) {
 			ventile.add(ventil);
-			ventil.setPlan(on);
+			ventil.setPlanOn(on);
 		}
 	}
 
@@ -99,7 +96,7 @@ public class Zeitplan implements Closeable {
 		this.on = on;
 		synchronized (ventile) {
 			for (Ventil v : ventile)
-				v.setPlan(on);
+				v.setPlanOn(on);
 		}
 	}
 
@@ -130,7 +127,7 @@ public class Zeitplan implements Closeable {
 
 	}
 
-	public boolean removeVentil(Ventil v) {
+	boolean removeVentil(Ventil v) {
 		synchronized(ventile)
 		{
 			return ventile.remove(v);
