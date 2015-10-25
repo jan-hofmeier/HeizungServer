@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zeitplaene>
+	<zeitplan id="0">
+		
+		<an>
+			<von>4:00</von>
+			<bis>6:30</bis>
+		</an>
+		<an>
+			<von>12:00</von>
+			<bis>22:00</bis>
+		</an>
+		<name></name></zeitplan>
+	</zeitplaene>
