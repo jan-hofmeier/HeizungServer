@@ -7,11 +7,17 @@ public class Ventil{
 	private Mode mode=Mode.AUTO;
 	private String name;
 	private Zeitplan zeitplan;
+	private final int gpio;
 	
 	public Ventil(int gpio, String name) {
 		this.name=name;
+		this.gpio=gpio;
 	}
 	
+	public int getGpio() {
+		return gpio;
+	}
+
 	public String getName()
 	{
 		return name;
