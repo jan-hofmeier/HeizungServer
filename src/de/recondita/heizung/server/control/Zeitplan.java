@@ -20,9 +20,9 @@ public class Zeitplan implements Closeable {
 	private LocalTime[][] plan;
 	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
 	private Timer timer = new Timer();
-	private Timer dailyTimer=new Timer();
-	private boolean on=false;
-	
+	private Timer dailyTimer = new Timer();
+	private boolean on = false;
+
 	public Zeitplan(LocalTime[][] plan, Ventil[] ventile) {
 		this.plan = plan;
 		for (Ventil ventil : ventile)
@@ -54,7 +54,28 @@ public class Zeitplan implements Closeable {
 		dailyTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				Zeitplan.this.run();
+				try {
+					synchronized (Zeitplan.this) {
+						timer.cancel();
+						timer = new Timer(); // vorsichtshalber erneuern
+					}
+					//eigener Thread für alle fälle
+					new Thread() {
+						@Override
+						public void run() {
+							try {
+								System.gc();
+								Zeitplan.this.run();
+							} catch (Exception e) {
+								e.printStackTrace();
+								logVeryBadException(e);
+							}
+						}
+					}.start();
+				} catch (Exception e) {
+					e.printStackTrace();
+					logVeryBadException(e);
+				}
 			}
 		}, today.getTime(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
 		run();
@@ -67,42 +88,51 @@ public class Zeitplan implements Closeable {
 	}
 
 	private void setVentile(boolean on) {
-		this.on=on;
+		this.on = on;
 		synchronized (ventile) {
 			for (Ventil v : ventile)
 				v.setPlan(on);
 		}
 	}
 
-	public boolean isOn()
-	{
+	public boolean isOn() {
 		return on;
 	}
-	
+
 	private synchronized void run() {
 		timer.cancel();
-		
-		LocalDate date=LocalDate.now();
-		int day=date.getDayOfWeek().ordinal();
+
+		LocalDate date = LocalDate.now();
+		int day = date.getDayOfWeek().ordinal();
 		LocalTime now = LocalTime.now();
 
 		int punkt = -1;
 		for (int i = 0; i < plan[day].length && now.compareTo(plan[day][i]) < 0; i++)
 			punkt = i;
 
-		if (punkt + 1 < plan[day].length)
-		{			
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					Zeitplan.this.run();
-				}
-			}, Date.from(plan[day][punkt + 1].atDate(date).
-			        atZone(ZoneId.systemDefault()).toInstant()));
-			
+		if (punkt + 1 < plan[day].length) {
+			timer.schedule(
+					new TimerTask() {
+						@Override
+						public void run() {
+							try {
+								Zeitplan.this.run();
+							} catch (Exception e) {
+								e.printStackTrace();
+								logVeryBadException(e);
+							}
+						}
+					},
+					Date.from(plan[day][punkt + 1].atDate(date)
+							.atZone(ZoneId.systemDefault()).toInstant()));
+
 		}
 
 		setVentile((punkt & 1) == 0);
 
+	}
+
+	private void logVeryBadException(Exception e) {
+		// TODO
 	}
 }
