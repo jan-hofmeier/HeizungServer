@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zeitplaene>
 	<zeitplan id="0">
-		
+	<name>Bad</name>
 		<an>
 			<von>4:00</von>
 			<bis>6:30</bis>
@@ -10,5 +10,5 @@
 			<von>12:00</von>
 			<bis>22:00</bis>
 		</an>
-		<name></name></zeitplan>
-	</zeitplaene>
+	</zeitplan>
+</zeitplaene>
