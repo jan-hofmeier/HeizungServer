@@ -2,13 +2,15 @@
 <zeitplaene>
 	<zeitplan id="0">
 	<name>Bad</name>
-		<an>
-			<von>4:00</von>
-			<bis>6:30</bis>
-		</an>
-		<an>
-			<von>12:00</von>
-			<bis>22:00</bis>
-		</an>
+		<schaltpunkte>
+			<an>4:00</an>
+			<aus>6:30</aus>
+			<an>12:00</an>
+			<aus>22:00</aus>
+		</schaltpunkte>
+		<ventile>
+			<id>0</id>
+			<id>1</id>
+		</ventile>
 	</zeitplan>
 </zeitplaene>
