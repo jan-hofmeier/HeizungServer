@@ -10,7 +10,17 @@
 		</schaltpunkte>
 		<ventile>
 			<id>0</id>
+		</ventile>
+	</zeitplan>
+		<zeitplan id="0">
+	<name>Wohnzimmer</name>
+		<schaltpunkte>
+			<an>12:00</an>
+			<aus>22:00</aus>
+		</schaltpunkte>
+		<ventile>
 			<id>1</id>
+			<id>2</id>
 		</ventile>
 	</zeitplan>
 </zeitplaene>
