@@ -5,19 +5,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ZeitplanVerwalter implements Closeable {
-	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
+	private ArrayList<Ventil> ventile;
 	private ArrayList<Zeitplan> zeitPlaene = new ArrayList<Zeitplan>();
 
-	public void addVentil(Ventil v) {
-		synchronized (ventile) {
-			ventile.add(v);
-		}
+	public ZeitplanVerwalter(ArrayList<Ventil> ventile) {
+		this.ventile = ventile;
+	}
+
+	public ZeitplanVerwalter() {
+		this(new ArrayList<Ventil>());
 	}
 
 	@Override
 	public void close() throws IOException {
 		synchronized (zeitPlaene) {
-			for(Zeitplan z: zeitPlaene)
+			for (Zeitplan z : zeitPlaene)
 				z.close();
 		}
 
