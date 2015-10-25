@@ -22,8 +22,10 @@ public class Zeitplan implements Closeable {
 	private Timer timer;
 	private Timer dailyTimer;
 	private boolean on = false;
+	private String name;
 
-	public Zeitplan(LocalTime[][] plan) {
+	public Zeitplan(String name,LocalTime[][] plan) {
+		this.setName(name);
 		setPlan(plan);
 	}
 
@@ -148,5 +150,13 @@ public class Zeitplan implements Closeable {
 
 	private void logVeryBadException(Exception e) {
 		// TODO
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
