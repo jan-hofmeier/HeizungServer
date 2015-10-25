@@ -19,14 +19,15 @@ public class Zeitplan implements Closeable {
 	 */
 	private LocalTime[][] plan;
 	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
-	private Timer timer = new Timer();
-	private Timer dailyTimer = new Timer();
+	private Timer timer;
+	private Timer dailyTimer;
 	private boolean on = false;
 
 	public Zeitplan(LocalTime[][] plan, Ventil[] ventile) {
-		this.plan = plan;
+		this.ventile = new ArrayList<Ventil>(ventile.length);
 		for (Ventil ventil : ventile)
 			addVentil(ventil);
+		setPlan(plan);
 	}
 
 	public void addVentil(Ventil ventil) {
@@ -37,7 +38,7 @@ public class Zeitplan implements Closeable {
 	}
 
 	public synchronized void setPlan(LocalTime[][] plan) {
-		this.plan = plan.clone();
+		this.plan = plan;
 	}
 
 	public Ventil[] getVentile() {
@@ -47,44 +48,52 @@ public class Zeitplan implements Closeable {
 	}
 
 	public synchronized void start() {
+		close();
 		Calendar today = Calendar.getInstance();
-		today.set(Calendar.HOUR_OF_DAY, 2);
+		today.add(Calendar.DAY_OF_WEEK, 1);
+		today.set(Calendar.HOUR_OF_DAY, 0);
 		today.set(Calendar.MINUTE, 0);
 		today.set(Calendar.SECOND, 2);
+		dailyTimer = new Timer();
 		dailyTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				try {
 					synchronized (Zeitplan.this) {
-						timer.cancel();
+						cancelTimerSafe();
 						timer = new Timer(); // vorsichtshalber erneuern
 					}
-					//eigener Thread für alle fälle
-					new Thread() {
-						@Override
-						public void run() {
-							try {
-								System.gc();
-								Zeitplan.this.run();
-							} catch (Exception e) {
-								e.printStackTrace();
-								logVeryBadException(e);
-							}
-						}
-					}.start();
+					// eigener Thread für alle fälle
+					new Thread(new ZeitplanTask()).start();
 				} catch (Exception e) {
 					e.printStackTrace();
 					logVeryBadException(e);
 				}
 			}
 		}, today.getTime(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
+		timer = new Timer();
 		run();
 	}
 
+	private void cancelTimerSafe()
+	{
+		if (timer != null)
+			try {
+				timer.cancel();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	}
+	
 	@Override
-	public void close() {
-		timer.cancel();
-		dailyTimer.cancel();
+	public synchronized void close() {
+		cancelTimerSafe();
+		if (dailyTimer != null)
+			try {
+				dailyTimer.cancel();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	}
 
 	private void setVentile(boolean on) {
@@ -112,17 +121,7 @@ public class Zeitplan implements Closeable {
 
 		if (punkt + 1 < plan[day].length) {
 			timer.schedule(
-					new TimerTask() {
-						@Override
-						public void run() {
-							try {
-								Zeitplan.this.run();
-							} catch (Exception e) {
-								e.printStackTrace();
-								logVeryBadException(e);
-							}
-						}
-					},
+					new ZeitplanTask(),
 					Date.from(plan[day][punkt + 1].atDate(date)
 							.atZone(ZoneId.systemDefault()).toInstant()));
 
@@ -132,6 +131,19 @@ public class Zeitplan implements Closeable {
 
 	}
 
+	private class ZeitplanTask extends TimerTask
+	{
+		@Override
+		public void run() {
+			try {
+				Zeitplan.this.run();
+			} catch (Exception e) {
+				e.printStackTrace();
+				logVeryBadException(e);
+			}
+		}
+	}
+	
 	private void logVeryBadException(Exception e) {
 		// TODO
 	}
