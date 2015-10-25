@@ -23,8 +23,14 @@ public class Zeitplan implements Closeable {
 	private Timer dailyTimer;
 	private boolean on = false;
 	private String name;
+	public final int id;
 
-	public Zeitplan(String name,LocalTime[][] plan) {
+	public int getId() {
+		return id;
+	}
+
+	public Zeitplan(int id,String name,LocalTime[][] plan) {
+		this.id=id;
 		this.setName(name);
 		setPlan(plan);
 	}

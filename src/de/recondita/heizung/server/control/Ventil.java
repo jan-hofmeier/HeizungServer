@@ -7,9 +7,15 @@ public class Ventil{
 	private Mode mode=Mode.AUTO;
 	private String name;
 	private Zeitplan zeitplan;
-	private final int gpio;
+	private int gpio;
+	public final int id;
 	
-	public Ventil(int gpio, String name) {
+	public int getId() {
+		return id;
+	}
+
+	public Ventil(int id,int gpio, String name) {
+		this.id=id;
 		this.name=name;
 		this.gpio=gpio;
 	}
