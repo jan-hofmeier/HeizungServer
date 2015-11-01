@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +41,7 @@ public class XMLLoader {
 	private final XPathExpression zeitplanePath;
 	private final XPathExpression gpioPath;
 	private final XPathExpression schaltpunktePath;
+	private final XPathExpression tagePath;
 
 	public XMLLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -49,7 +52,7 @@ public class XMLLoader {
 		zeitplanePath = xPath.compile("/ventile");
 		gpioPath = xPath.compile("gpio");
 		schaltpunktePath = xPath.compile("schaltpunkte");
-		;
+		tagePath = xPath.compile("tage/tag");
 		this.configdir = configdir;
 	}
 
@@ -74,36 +77,78 @@ public class XMLLoader {
 	}
 
 	public ArrayList<Zeitplan> loadZeitplaene(Reader xml, Ventilverwalter ventilverwalter)
-			throws SAXException, IOException, XPathExpressionException {
+			throws SAXException, IOException, XPathExpressionException, PunktOrderException {
 		Document xmlDocument = builder.parse(new InputSource(xml));
 		NodeList zeitPlaene = (NodeList) zeitplaenePath.evaluate(xmlDocument, XPathConstants.NODESET);
 
 		ArrayList<Zeitplan> ret = new ArrayList<Zeitplan>(zeitPlaene.getLength());
 
 		for (int i = 0; i < zeitPlaene.getLength(); i++) {
-			Node zeitplanNode = zeitPlaene.item(i);
-			int id = Integer.parseInt(zeitplanNode.getAttributes().getNamedItem("id").getNodeValue());
-			String name = namePath.evaluate(zeitplanNode);
-			Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
-			LocalTime[][] plan = evaluateZeitplan(tagesplaene);
-			ret.add(new Zeitplan(id, name, plan));
+			ret.add(evaluateZeitplan(zeitPlaene.item(i)));
 		}
 		return ret;
 	}
 
-	private LocalTime[][] evaluateZeitplan(Node tagesplaene) throws XPathExpressionException {
+	private Zeitplan evaluateZeitplan(Node zeitplanNode) throws XPathExpressionException, PunktOrderException {
+		int id = Integer.parseInt(zeitplanNode.getAttributes().getNamedItem("id").getNodeValue());
+		String name = namePath.evaluate(zeitplanNode);
+		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
+		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
+		return new Zeitplan(id, name, plan);
+	}
+
+	private LocalTime[][] evaluateTagesplan(Node tagesplaene) throws XPathExpressionException, PunktOrderException {
 		NodeList tagNodes = (NodeList) tagesPlanPath.evaluate(tagesplaene, XPathConstants.NODESET);
 		LocalTime[][] ret = new LocalTime[7][];
 		for (int i = 0; i < tagNodes.getLength(); i++) {
-			Node tagNode=tagNodes.item(i);
-			
+			Node tagNode = tagNodes.item(i);
+			LocalTime[] tagesPlan = evaluateSchaltpunkte(
+					(Node) schaltpunktePath.evaluate(tagNode, XPathConstants.NODE));
+			NodeList tage = (NodeList) tagePath.evaluate(tagNode, XPathConstants.NODESET);
+			for (int j = 0; j < tage.getLength(); j++) {
+				ret[Integer.parseInt(tage.item(j).getNodeValue())] = tagesPlan;
+			}
 		}
 		return ret;
 	}
-	
-	private LocalTime[] evaluateSchaltpunkte(Node schaltpunkte)
-	{
-		return null;
+
+	private LocalTime[] evaluateSchaltpunkte(Node schaltpunkte) throws XPathExpressionException, PunktOrderException {
+		NodeList punktNodes = (NodeList) schaltpunktePath.evaluate(schaltpunkte, XPathConstants.NODESET);
+		TreeSet<LocalTime> an = new TreeSet<LocalTime>();
+		TreeSet<LocalTime> aus = new TreeSet<LocalTime>();
+		for (int i = 0; i < punktNodes.getLength(); i++) {
+			Node punktNode = punktNodes.item(i);
+			switch (punktNode.getNodeName()) {
+			case "an":
+				an.add(toLocalTime(punktNode.getNodeValue()));
+				break;
+			case "aus":
+				aus.add(toLocalTime(punktNode.getNodeValue()));
+				break;
+			}
+		}
+		LocalTime[] ret = new LocalTime[an.size() + aus.size()];
+		Iterator<LocalTime> anIt = an.iterator();
+		Iterator<LocalTime> ausIt = aus.iterator();
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = i % 2 == 0 ? anIt.next() : ausIt.next();
+			if (i > 0 && ret[i].isBefore(ret[i - 1]))
+				throw new PunktOrderException(ret[i], ret[i - 1]);
+		}
+		return ret;
+	}
+
+	private LocalTime toLocalTime(String time) {
+		String[] parts = time.split(":");
+		return LocalTime.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+	}
+
+	public class PunktOrderException extends Exception {
+		private static final long serialVersionUID = -289478342144267298L;
+
+		public PunktOrderException(LocalTime before, LocalTime after) {
+			super(before.toString() + " before " + after.toString());
+		}
 	}
 
 }
