@@ -121,7 +121,6 @@ public class Zeitplan implements Closeable {
 	}
 
 	private synchronized void run() {
-		timer.cancel();
 
 		LocalDate date = LocalDate.now();
 		int day = date.getDayOfWeek().ordinal();
