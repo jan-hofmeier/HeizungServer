@@ -108,7 +108,7 @@ public class XMLLoader {
 		NodeList ventilNodes = (NodeList) planVentilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
 		for(int i=0; i<ventilNodes.getLength(); i++)
 		{
-			String ventilName=ventilNodes.item(i).getNodeValue();
+			String ventilName=ventilNodes.item(i).getTextContent();
 			System.out.println("Füge Ventil " +ventilName +" zu Plan " +name +" hinzu");
 			ventilverwalter.getVentilByName(ventilName).setZeitplan(zp);
 		}
