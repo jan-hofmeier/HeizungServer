@@ -51,7 +51,7 @@ public class XMLLoader {
 		tagesPlanPath = xPath.compile("tagesplane");
 		namePath = xPath.compile("name");
 		ventilePath = xPath.compile("/ventile/ventil");
-		gpioPath = xPath.compile("ventil");
+		gpioPath = xPath.compile("gpio");
 		schaltpunktePath = xPath.compile("schaltpunkte");
 		tagePath = xPath.compile("tage/tag");
 		planVentilePath= xPath.compile("ventile/ventil");
