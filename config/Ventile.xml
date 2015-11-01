@@ -2,6 +2,6 @@
 <ventile>
 	<ventil>
 		<name>Bad</name>
-		<gpio>0</gpio>
+		<gpio>17</gpio>
 	</ventil>
 </ventile>

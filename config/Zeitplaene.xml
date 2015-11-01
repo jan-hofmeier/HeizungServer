@@ -6,9 +6,9 @@
 			<tagesplan>
 				<tage>
 					<tag>0</tag>
+					<tag>1</tag>
 					<tag>2</tag>
 					<tag>3</tag>
-					<tag>4</tag>
 				</tage>
 				<schaltpunkte>
 					<an>4:00</an>
@@ -19,7 +19,7 @@
 			</tagesplan>
 			<tagesplan>
 				<tage>
-					<tag>5</tag>
+					<tag>4</tag>
 				</tage>
 				<schaltpunkte>
 					<an>4:00</an>
@@ -28,9 +28,27 @@
 					<aus>23:00</aus>
 				</schaltpunkte>
 			</tagesplan>
+			<tagesplan>
+				<tage>
+					<tag>5</tag>
+				</tage>
+				<schaltpunkte>
+					<an>6:00</an>
+					<aus>23:00</aus>
+				</schaltpunkte>
+			</tagesplan>
+			<tagesplan>
+				<tage>
+					<tag>6</tag>
+				</tage>
+				<schaltpunkte>
+					<an>6:00</an>
+					<aus>22:00</aus>
+				</schaltpunkte>
+			</tagesplan>
 		</tagesplaene>
 		<ventile>
-			<gpio>0</gpio>
+			<gpio>Bad</gpio>
 		</ventile>
 	</zeitplan>
 </zeitplaene>
