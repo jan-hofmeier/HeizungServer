@@ -81,7 +81,7 @@ public class XMLLoader {
 	public ArrayList<Zeitplan> loadZeitplaene(Ventilverwalter ventilverwalter)
 			throws FileNotFoundException, IOException, XPathExpressionException, SAXException, PunktOrderException {
 		try (FileInputStream fis = new FileInputStream(
-				configdir.getAbsolutePath() + File.separator + "Zeitplane.xml");) {
+				configdir.getAbsolutePath() + File.separator + "Zeitplaene.xml");) {
 			return loadZeitplaene(new InputStreamReader(fis), ventilverwalter);
 		}
 	}
@@ -108,7 +108,9 @@ public class XMLLoader {
 		NodeList ventilNodes = (NodeList) planVentilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
 		for(int i=0; i<ventilNodes.getLength(); i++)
 		{
-			ventilverwalter.getVentilByName(ventilNodes.item(i).getNodeValue()).setZeitplan(zp);
+			String ventilName=ventilNodes.item(i).getNodeValue();
+			System.out.println("Füge Ventil " +ventilName +" zu Plan " +name +" hinzu");
+			ventilverwalter.getVentilByName(ventilName).setZeitplan(zp);
 		}
 		return zp;
 	}

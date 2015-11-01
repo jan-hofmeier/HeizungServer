@@ -50,11 +50,12 @@ public class Ventilverwalter {
 			v = getVentilByPin(pin);
 			if (v != null) {
 				v.setGpio(-1);
-			}
-			enable(pin);
+			} else
+				enable(pin);
 			v = new Ventil(pin, name);
 			gpioMap.put(pin, v);
 			nameMap.put(name, v);
+			System.out.println("Ventil "+name+" erstelt");
 		}
 	}
 
@@ -75,7 +76,7 @@ public class Ventilverwalter {
 		}
 		try (FileWriter out = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");) {
 			out.write("out");
-		} 
+		}
 	}
 
 	private void disable(int pin) {
