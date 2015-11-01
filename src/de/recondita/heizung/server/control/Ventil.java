@@ -46,12 +46,16 @@ public class Ventil {
 		synchronized (lock) {
 			gpioOn = mode == Mode.ON || (mode == Mode.AUTO && planOn);
 			if (gpio >= 0)
-				try (FileWriter fw = new FileWriter("/sys/class/gpio/gpio" + gpio + "/direction");) {
-					fw.write(gpioOn ? 1 : 0);
-					Thread.sleep(1000);
-				} catch (IOException | InterruptedException e) {
+				try (FileWriter fw = new FileWriter("/sys/class/gpio/gpio" + gpio + "/value");) {
+					fw.write(gpioOn ? "1" : "0");
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
