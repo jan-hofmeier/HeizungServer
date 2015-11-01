@@ -100,7 +100,7 @@ public class XMLLoader {
 	}
 
 	private Zeitplan evaluateZeitplan(Node zeitplanNode, Ventilverwalter ventilverwalter) throws XPathExpressionException, PunktOrderException {
-		int id = Integer.parseInt(zeitplanNode.getAttributes().getNamedItem("id").getNodeValue());
+		int id = Integer.parseInt(zeitplanNode.getAttributes().getNamedItem("id").getTextContent());
 		String name = namePath.evaluate(zeitplanNode);
 		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
 		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
@@ -124,7 +124,7 @@ public class XMLLoader {
 					(Node) schaltpunktePath.evaluate(tagNode, XPathConstants.NODE));
 			NodeList tage = (NodeList) tagePath.evaluate(tagNode, XPathConstants.NODESET);
 			for (int j = 0; j < tage.getLength(); j++) {
-				ret[Integer.parseInt(tage.item(j).getNodeValue())] = tagesPlan;
+				ret[Integer.parseInt(tage.item(j).getTextContent())] = tagesPlan;
 			}
 		}
 		return ret;
@@ -138,10 +138,10 @@ public class XMLLoader {
 			Node punktNode = punktNodes.item(i);
 			switch (punktNode.getNodeName()) {
 			case "an":
-				an.add(toLocalTime(punktNode.getNodeValue()));
+				an.add(toLocalTime(punktNode.getTextContent()));
 				break;
 			case "aus":
-				aus.add(toLocalTime(punktNode.getNodeValue()));
+				aus.add(toLocalTime(punktNode.getTextContent()));
 				break;
 			}
 		}
@@ -150,6 +150,7 @@ public class XMLLoader {
 		Iterator<LocalTime> ausIt = aus.iterator();
 		for (int i = 0; i < ret.length; i++) {
 			ret[i] = i % 2 == 0 ? anIt.next() : ausIt.next();
+			System.out.println("Schaltpunkt "+ ret[i]);
 			if (i > 0 && ret[i].isBefore(ret[i - 1]))
 				throw new PunktOrderException(ret[i], ret[i - 1]);
 		}
