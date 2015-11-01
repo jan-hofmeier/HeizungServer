@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ventile>
-	<ventil id="0">
+	<ventil>
 		<name>Bad</name>
 		<gpio>15</gpio>
 	</ventil>
-	<ventil id="1">
+	<ventil>
 		<name>Esszimmer</name>
 		<gpio>16</gpio>
 	</ventil>

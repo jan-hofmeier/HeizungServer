@@ -9,7 +9,7 @@
 			<aus>22:00</aus>
 		</schaltpunkte>
 		<ventile>
-			<id>0</id>
+			<gpio>15</gpio>
 		</ventile>
 	</zeitplan>
 		<zeitplan id="0">
@@ -19,8 +19,7 @@
 			<aus>22:00</aus>
 		</schaltpunkte>
 		<ventile>
-			<id>1</id>
-			<id>2</id>
+			<gpio>16</gpio>
 		</ventile>
 	</zeitplan>
 </zeitplaene>

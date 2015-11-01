@@ -1,8 +1,11 @@
-package de.recondita.heizung.server.control;
+package de.recondita.heizung.server.verwalter;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import de.recondita.heizung.server.control.Ventil;
+import de.recondita.heizung.server.control.Zeitplan;
 
 public class ZeitplanVerwalter implements Closeable {
 	private ArrayList<Ventil> ventile;
@@ -22,7 +25,7 @@ public class ZeitplanVerwalter implements Closeable {
 			for (Zeitplan z : zeitPlaene)
 				z.close();
 		}
-
 	}
+	
 
 }
