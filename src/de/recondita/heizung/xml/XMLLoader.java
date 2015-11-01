@@ -38,23 +38,23 @@ public class XMLLoader {
 	private final XPathExpression tagesPlaenePath;
 	private final XPathExpression tagesPlanPath;
 	private final XPathExpression namePath;
-	private final XPathExpression zeitplanePath;
+	private final XPathExpression ventilePath;
 	private final XPathExpression gpioPath;
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
-	private final XPathExpression ventilePath;
+	private final XPathExpression planVentilePath;
 
 	public XMLLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		zeitplaenePath = xPath.compile("/zeitplaene");
+		zeitplaenePath = xPath.compile("/zeitplaene/zeitplan");
 		tagesPlaenePath = xPath.compile("tagesplaene");
 		tagesPlanPath = xPath.compile("tagesplane");
 		namePath = xPath.compile("name");
-		zeitplanePath = xPath.compile("/ventile");
-		gpioPath = xPath.compile("gpio");
+		ventilePath = xPath.compile("/ventile/ventil");
+		gpioPath = xPath.compile("ventil");
 		schaltpunktePath = xPath.compile("schaltpunkte");
 		tagePath = xPath.compile("tage/tag");
-		ventilePath= xPath.compile("ventile/ventile");
+		planVentilePath= xPath.compile("ventile/ventil");
 		this.configdir = configdir;
 	}
 
@@ -70,7 +70,7 @@ public class XMLLoader {
 			throws XPathExpressionException, SAXException, IOException {
 		Document xmlDocument = builder.parse(new InputSource(xml));
 
-		NodeList ventile = (NodeList) zeitplanePath.evaluate(xmlDocument, XPathConstants.NODESET);
+		NodeList ventile = (NodeList) ventilePath.evaluate(xmlDocument, XPathConstants.NODESET);
 
 		for (int i = 0; i < ventile.getLength(); i++) {
 			Node v = ventile.item(i);
@@ -105,7 +105,7 @@ public class XMLLoader {
 		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
 		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
 		Zeitplan zp= new Zeitplan(id, name, plan);
-		NodeList ventilNodes = (NodeList) ventilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
+		NodeList ventilNodes = (NodeList) planVentilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
 		for(int i=0; i<ventilNodes.getLength(); i++)
 		{
 			ventilverwalter.getVentilByName(ventilNodes.item(i).getNodeValue()).setZeitplan(zp);
