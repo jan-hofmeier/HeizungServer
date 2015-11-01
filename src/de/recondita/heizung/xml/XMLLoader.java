@@ -48,7 +48,7 @@ public class XMLLoader {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		zeitplaenePath = xPath.compile("/zeitplaene/zeitplan");
 		tagesPlaenePath = xPath.compile("tagesplaene");
-		tagesPlanPath = xPath.compile("tagesplane");
+		tagesPlanPath = xPath.compile("tagesplan");
 		namePath = xPath.compile("name");
 		ventilePath = xPath.compile("/ventile/ventil");
 		gpioPath = xPath.compile("gpio");
@@ -131,7 +131,8 @@ public class XMLLoader {
 	}
 
 	private LocalTime[] evaluateSchaltpunkte(Node schaltpunkte) throws XPathExpressionException, PunktOrderException {
-		NodeList punktNodes = (NodeList) schaltpunktePath.evaluate(schaltpunkte, XPathConstants.NODESET);
+		NodeList punktNodes = schaltpunkte.getChildNodes();
+		System.out.println(punktNodes.getLength()+ " Schaltpunkte");
 		TreeSet<LocalTime> an = new TreeSet<LocalTime>();
 		TreeSet<LocalTime> aus = new TreeSet<LocalTime>();
 		for (int i = 0; i < punktNodes.getLength(); i++) {
