@@ -128,7 +128,7 @@ public class Zeitplan implements Closeable {
 
 		int punkt = -1;
 		if (plan[day] != null) {
-			for (int i = 0; i < plan[day].length && now.compareTo(plan[day][i]) < 0; i++)
+			for (int i = 0; i < plan[day].length && now.isBefore((plan[day][i])); i++)
 				punkt = i;
 
 			if (punkt + 1 < plan[day].length) {
