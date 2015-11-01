@@ -1,5 +1,6 @@
 package de.recondita.heizung.server.control;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
@@ -60,8 +61,13 @@ public class Ventilverwalter {
 	private void enable(int pin) {
 		try (FileWriter export = new FileWriter("/sys/class/gpio/export");) {
 			export.write(Integer.toString(pin));
-			try(FileWriter out=new FileWriter("/sys/class/gpio/gpio"+pin+"/direction");)
-			{
+			while (!new File("/sys/class/gpio/gpio" + pin).exists())
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			try (FileWriter out = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");) {
 				out.write("out");
 			}
 		} catch (IOException e) {
