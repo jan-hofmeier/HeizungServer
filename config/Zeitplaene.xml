@@ -1,19 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zeitplaene>
 	<zeitplan id="0">
-	<name>Bad</name>
+		<name>Bad</name>
 		<schaltpunkte>
-			<an>4:00</an>
-			<aus>6:30</aus>
-			<an>12:00</an>
-			<aus>22:00</aus>
+			<tagesablauf>
+				<tag>0</tag>
+				<tag>2</tag>
+				<tag>3</tag>
+				<tag>4</tag>
+				<tag>5</tag>
+				<tag>6</tag>
+				<an>4:00</an>
+				<aus>6:30</aus>
+				<an>12:00</an>
+				<aus>22:00</aus>
+			</tagesablauf>
+			<tagesablauf>
+				<tag>7</tag>
+				<an>6:30</an>
+				<aus>22:00</aus>
+			</tagesablauf>
 		</schaltpunkte>
 		<ventile>
 			<gpio>15</gpio>
 		</ventile>
 	</zeitplan>
-		<zeitplan id="0">
-	<name>Wohnzimmer</name>
+	<zeitplan id="0">
+		<name>Wohnzimmer</name>
 		<schaltpunkte>
 			<an>12:00</an>
 			<aus>22:00</aus>
