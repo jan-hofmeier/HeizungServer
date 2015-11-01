@@ -2,25 +2,29 @@
 <zeitplaene>
 	<zeitplan id="0">
 		<name>Bad</name>
-		<schaltpunkte>
-			<tagesablauf>
-				<tag>0</tag>
-				<tag>2</tag>
-				<tag>3</tag>
-				<tag>4</tag>
-				<tag>5</tag>
-				<tag>6</tag>
-				<an>4:00</an>
-				<aus>6:30</aus>
-				<an>12:00</an>
-				<aus>22:00</aus>
-			</tagesablauf>
+		<tagesplaene>
+			<tagesplan>
+				<tage>
+					<tag>0</tag>
+					<tag>2</tag>
+					<tag>3</tag>
+					<tag>4</tag>
+					<tag>5</tag>
+					<tag>6</tag>
+				</tage>
+				<schaltpunkte>
+					<an>4:00</an>
+					<aus>6:30</aus>
+					<an>12:00</an>
+					<aus>22:00</aus>
+				</schaltpunkte>
+			</tagesplan>
 			<tagesablauf>
 				<tag>7</tag>
 				<an>6:30</an>
 				<aus>22:00</aus>
 			</tagesablauf>
-		</schaltpunkte>
+		</tagesplaene>
 		<ventile>
 			<gpio>15</gpio>
 		</ventile>
