@@ -61,7 +61,7 @@ public class XMLLoader {
 	public void loadVentile(Ventilverwalter ventilverwalter)
 			throws FileNotFoundException, IOException, XPathExpressionException, SAXException {
 		try (FileInputStream fis = new FileInputStream(
-				configdir.getAbsolutePath() + File.pathSeparator + "Ventile.xml");) {
+				configdir.getAbsolutePath() + File.separator + "Ventile.xml");) {
 			loadVentile(new InputStreamReader(fis), ventilverwalter);
 		}
 	}
@@ -81,7 +81,7 @@ public class XMLLoader {
 	public ArrayList<Zeitplan> loadZeitplaene(Ventilverwalter ventilverwalter)
 			throws FileNotFoundException, IOException, XPathExpressionException, SAXException, PunktOrderException {
 		try (FileInputStream fis = new FileInputStream(
-				configdir.getAbsolutePath() + File.pathSeparator + "Zeitplane.xml");) {
+				configdir.getAbsolutePath() + File.separator + "Zeitplane.xml");) {
 			return loadZeitplaene(new InputStreamReader(fis), ventilverwalter);
 		}
 	}
