@@ -128,12 +128,15 @@ public class Zeitplan implements Closeable {
 
 		int punkt = -1;
 		if (plan[day] != null) {
-			for (int i = 0; i < plan[day].length && now.isBefore((plan[day][i])); i++)
-				punkt = i;
+			for (int i = 0; i < plan[day].length; i++)
+				if (now.isBefore((plan[day][i])))
+					punkt = i;
 
 			if (punkt + 1 < plan[day].length) {
-				timer.schedule(new ZeitplanTask(),
-						Date.from(plan[day][punkt + 1].atDate(date).atZone(ZoneId.systemDefault()).toInstant()));
+				timer.schedule(
+						new ZeitplanTask(),
+						Date.from(plan[day][punkt + 1].atDate(date)
+								.atZone(ZoneId.systemDefault()).toInstant()));
 			}
 		}
 		setVentile((punkt & 1) == 0);
