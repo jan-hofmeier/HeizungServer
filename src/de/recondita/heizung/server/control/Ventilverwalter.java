@@ -68,6 +68,11 @@ public class Ventilverwalter {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		try (FileWriter out = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");) {
 			out.write("out");
 		} 
