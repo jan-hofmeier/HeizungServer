@@ -34,7 +34,7 @@ public class Ventilverwalter {
 		return INSTANCE;
 	}
 
-	public void createVentil(int pin, String name) {
+	public void createVentil(int pin, String name) throws IOException {
 		Ventil v = getVentilByName(name);
 		if (v != null) {
 			int altpin = v.getGpio();
@@ -58,21 +58,19 @@ public class Ventilverwalter {
 		}
 	}
 
-	private void enable(int pin) {
+	private void enable(int pin) throws IOException {
 		try (FileWriter export = new FileWriter("/sys/class/gpio/export");) {
 			export.write(Integer.toString(pin));
-			while (!new File("/sys/class/gpio/gpio" + pin).exists())
-				try {
-					Thread.sleep(20);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			try (FileWriter out = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");) {
-				out.write("out");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		while (!new File("/sys/class/gpio/gpio" + pin).exists())
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		try (FileWriter out = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");) {
+			out.write("out");
+		} 
 	}
 
 	private void disable(int pin) {
