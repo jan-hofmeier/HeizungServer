@@ -42,6 +42,7 @@ public class XMLLoader {
 	private final XPathExpression gpioPath;
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
+	private final XPathExpression ventilePath;
 
 	public XMLLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -53,6 +54,7 @@ public class XMLLoader {
 		gpioPath = xPath.compile("gpio");
 		schaltpunktePath = xPath.compile("schaltpunkte");
 		tagePath = xPath.compile("tage/tag");
+		ventilePath= xPath.compile("ventile/ventile");
 		this.configdir = configdir;
 	}
 
@@ -92,17 +94,23 @@ public class XMLLoader {
 		ArrayList<Zeitplan> ret = new ArrayList<Zeitplan>(zeitPlaene.getLength());
 
 		for (int i = 0; i < zeitPlaene.getLength(); i++) {
-			ret.add(evaluateZeitplan(zeitPlaene.item(i)));
+			ret.add(evaluateZeitplan(zeitPlaene.item(i),ventilverwalter));
 		}
 		return ret;
 	}
 
-	private Zeitplan evaluateZeitplan(Node zeitplanNode) throws XPathExpressionException, PunktOrderException {
+	private Zeitplan evaluateZeitplan(Node zeitplanNode, Ventilverwalter ventilverwalter) throws XPathExpressionException, PunktOrderException {
 		int id = Integer.parseInt(zeitplanNode.getAttributes().getNamedItem("id").getNodeValue());
 		String name = namePath.evaluate(zeitplanNode);
 		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
 		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
-		return new Zeitplan(id, name, plan);
+		Zeitplan zp= new Zeitplan(id, name, plan);
+		NodeList ventilNodes = (NodeList) ventilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
+		for(int i=0; i<ventilNodes.getLength(); i++)
+		{
+			ventilverwalter.getVentilByName(ventilNodes.item(i).getNodeValue()).setZeitplan(zp);
+		}
+		return zp;
 	}
 
 	private LocalTime[][] evaluateTagesplan(Node tagesplaene) throws XPathExpressionException, PunktOrderException {

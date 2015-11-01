@@ -48,7 +48,7 @@
 			</tagesplan>
 		</tagesplaene>
 		<ventile>
-			<gpio>Bad</gpio>
+			<ventil>Bad</ventil>
 		</ventile>
 	</zeitplan>
 </zeitplaene>

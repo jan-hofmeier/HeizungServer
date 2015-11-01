@@ -24,7 +24,7 @@ public class Ventil {
 		return name;
 	}
 
-	public void setPlanOn(boolean on) {
+	void setPlanOn(boolean on) {
 		this.planOn = on;
 		setValue();
 	}
@@ -67,7 +67,7 @@ public class Ventil {
 		return gpioOn;
 	}
 
-	synchronized void setZeitplan(Zeitplan zp) {
+	public synchronized void setZeitplan(Zeitplan zp) {
 		removeFromZeitplan();
 		this.zeitplan = zp;
 		zp.addVentil(this);
