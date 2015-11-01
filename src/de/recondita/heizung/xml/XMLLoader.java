@@ -76,6 +76,14 @@ public class XMLLoader {
 		}
 	}
 
+	public ArrayList<Zeitplan> loadZeitplaene(Ventilverwalter ventilverwalter)
+			throws FileNotFoundException, IOException, XPathExpressionException, SAXException, PunktOrderException {
+		try (FileInputStream fis = new FileInputStream(
+				configdir.getAbsolutePath() + File.pathSeparator + "Zeitplane.xml");) {
+			return loadZeitplaene(new InputStreamReader(fis), ventilverwalter);
+		}
+	}
+	
 	public ArrayList<Zeitplan> loadZeitplaene(Reader xml, Ventilverwalter ventilverwalter)
 			throws SAXException, IOException, XPathExpressionException, PunktOrderException {
 		Document xmlDocument = builder.parse(new InputSource(xml));
