@@ -1,25 +1,30 @@
 package de.recondita.heizung.server.control;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
-
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
-import com.pi4j.io.gpio.PinState;
-import com.pi4j.io.gpio.RaspiPin;
 
 public class Ventilverwalter {
 
 	private static final Ventilverwalter INSTANCE = new Ventilverwalter();
 
-	private final GpioController gpioController = GpioFactory.getInstance();
-	private final HashMap<Integer, Ventil> ventile = new HashMap<Integer, Ventil>();
+	private final HashMap<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
+	private final HashMap<String, Ventil> nameMap = new HashMap<String, Ventil>();
 
 	private Ventilverwalter() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				gpioController.shutdown();
+				Collection<Integer> c = gpioMap.keySet();
+				try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
+					for (int gpio : c) {
+						unexport.write(Integer.toString(gpio));
+						unexport.flush();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
@@ -29,18 +34,55 @@ public class Ventilverwalter {
 	}
 
 	public void createVentil(int pin, String name) {
-		Ventil ventil = ventile.get(pin);
-		if (ventil == null) {
-			GpioPinDigitalOutput gpio = gpioController.provisionDigitalOutputPin(RaspiPin.getPinByName("GPIO " + pin),
-					name, PinState.LOW);
-			ventile.put(pin, new Ventil(gpio, name));
+		Ventil v = getVentilByName(name);
+		if (v != null) {
+			int altpin = v.getGpio();
+			if (v.getGpio() != pin) {
+				gpioMap.remove(altpin);
+				disable(altpin);
+				enable(pin);
+				v.setGpio(pin);
+				getVentilByPin(pin).setGpio(-1);
+				gpioMap.put(pin, v);
+			}
 		} else {
-			ventil.reset(name);
+			v = getVentilByPin(pin);
+			if (v != null) {
+				v.setGpio(-1);
+			}
+			enable(pin);
+			v = new Ventil(pin, name);
+			gpioMap.put(pin, v);
+			nameMap.put(name, v);
 		}
 	}
 
-	public Ventil getVentil(int pin) {
-		return ventile.get(pin);
+	private void enable(int pin) {
+		try (FileWriter export = new FileWriter("/sys/class/gpio/export");) {
+			export.write(Integer.toString(pin));
+			try(FileWriter out=new FileWriter("/sys/class/gpio/gpio"+pin+"/direction");)
+			{
+				out.write("out");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void disable(int pin) {
+		try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
+			unexport.write(Integer.toString(pin));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Ventil getVentilByPin(int pin) {
+		return gpioMap.get(pin);
+	}
+
+	public Ventil getVentilByName(String name) {
+		return nameMap.get(name);
 	}
 
 }

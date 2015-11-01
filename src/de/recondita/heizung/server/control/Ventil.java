@@ -1,31 +1,23 @@
 package de.recondita.heizung.server.control;
 
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class Ventil {
 
-	private boolean gpioOn;
-	private boolean planOn;
-	private Mode mode;
+	private boolean gpioOn = false;
+	private boolean planOn = false;
+	private Mode mode = Mode.AUTO;
 	private String name;
 	private Zeitplan zeitplan;
-	private final GpioPinDigitalOutput gpio;
+	private int gpio;
 
-	public Ventil(GpioPinDigitalOutput gpio, String name) {
+	private static final Object lock = new Object();
+
+	public Ventil(int gpio, String name) {
 		this.gpio = gpio;
-		reset(name);
-	}
-
-	public void reset(String name) {
 		this.name = name;
-		mode = Mode.AUTO;
-		gpioOn = false;
-		planOn = false;
-		removeFromZeitplan();
-	}
-
-	public int getGpio() {
-		return gpio.getPin().getAddress();
+		setValue();
 	}
 
 	public String getName() {
@@ -34,16 +26,41 @@ public class Ventil {
 
 	public void setPlanOn(boolean on) {
 		this.planOn = on;
-		setGPIO();
+		setValue();
 	}
 
-	public void override(Mode mode) {
+	public synchronized void override(Mode mode) {
 		this.mode = mode;
-		setGPIO();
+		setValue();
 	}
 
-	private void setGPIO() {
-		gpioOn = mode == Mode.ON || (mode == Mode.AUTO && planOn);
+	public Mode getMode() {
+		return this.mode;
+	}
+
+	public boolean getPlanOn() {
+		return planOn;
+	}
+
+	private void setValue() {
+		synchronized (lock) {
+			gpioOn = mode == Mode.ON || (mode == Mode.AUTO && planOn);
+			if (gpio >= 0)
+				try (FileWriter fw = new FileWriter("/sys/class/gpio/gpio" + gpio + "/direction");) {
+					fw.write(gpioOn ? 1 : 0);
+					Thread.sleep(1000);
+				} catch (IOException | InterruptedException e) {
+					e.printStackTrace();
+				}
+		}
+	}
+
+	int getGpio() {
+		return gpio;
+	}
+
+	void setGpio(int gpio) {
+		this.gpio = gpio;
 	}
 
 	public boolean isOn() {
@@ -66,5 +83,4 @@ public class Ventil {
 			setZeitplan(null);
 		}
 	}
-
 }
