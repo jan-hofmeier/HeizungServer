@@ -2,10 +2,6 @@
 <ventile>
 	<ventil>
 		<name>Bad</name>
-		<gpio>15</gpio>
-	</ventil>
-	<ventil>
-		<name>Esszimmer</name>
-		<gpio>16</gpio>
+		<gpio>0</gpio>
 	</ventil>
 </ventile>

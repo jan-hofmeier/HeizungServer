@@ -9,8 +9,6 @@
 					<tag>2</tag>
 					<tag>3</tag>
 					<tag>4</tag>
-					<tag>5</tag>
-					<tag>6</tag>
 				</tage>
 				<schaltpunkte>
 					<an>4:00</an>
@@ -19,24 +17,20 @@
 					<aus>22:00</aus>
 				</schaltpunkte>
 			</tagesplan>
-			<tagesablauf>
-				<tag>7</tag>
-				<an>6:30</an>
-				<aus>22:00</aus>
-			</tagesablauf>
+			<tagesplan>
+				<tage>
+					<tag>5</tag>
+				</tage>
+				<schaltpunkte>
+					<an>4:00</an>
+					<aus>6:30</aus>
+					<an>12:00</an>
+					<aus>23:00</aus>
+				</schaltpunkte>
+			</tagesplan>
 		</tagesplaene>
 		<ventile>
-			<gpio>15</gpio>
-		</ventile>
-	</zeitplan>
-	<zeitplan id="0">
-		<name>Wohnzimmer</name>
-		<schaltpunkte>
-			<an>12:00</an>
-			<aus>22:00</aus>
-		</schaltpunkte>
-		<ventile>
-			<gpio>16</gpio>
+			<gpio>0</gpio>
 		</ventile>
 	</zeitplan>
 </zeitplaene>
