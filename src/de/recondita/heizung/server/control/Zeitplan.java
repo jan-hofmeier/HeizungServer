@@ -1,17 +1,9 @@
 package de.recondita.heizung.server.control;
 
-import java.io.Closeable;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
-public class Zeitplan implements Closeable {
+public class Zeitplan {
 
 	/**
 	 * Zeiten [wochentag][schaltpunkt] schaltpunkt&1==0 = an !schaltpunkt&1==0 =
@@ -19,8 +11,8 @@ public class Zeitplan implements Closeable {
 	 */
 	private LocalTime[][] plan;
 	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
-	private Timer timer;
-	private Timer dailyTimer;
+	//private Timer timer;
+	//private Timer dailyTimer;
 	private boolean on = false;
 	private String name;
 	public final int id;
@@ -52,67 +44,13 @@ public class Zeitplan implements Closeable {
 		}
 	}
 
-	public synchronized void start() {
-		close();
-		Calendar today = Calendar.getInstance();
-		today.add(Calendar.DAY_OF_WEEK, 1);
-		today.set(Calendar.HOUR_OF_DAY, 0);
-		today.set(Calendar.MINUTE, 0);
-		today.set(Calendar.SECOND, 2);
-		dailyTimer = new Timer();
-		dailyTimer.scheduleAtFixedRate(new TimerTask() {
-			long lasttime = -1;
-
-			@Override
-			public void run() {
-				try {
-					synchronized (this) {
-						long time = System.currentTimeMillis();
-						if (time - lasttime < 3600000)
-							return;
-						lasttime = time;
-					}
-					synchronized (Zeitplan.this) {
-						cancelTimerSafe();
-						timer = new Timer(); // vorsichtshalber erneuern
-					}
-					// eigener Thread für alle fälle
-					new Thread(new ZeitplanTask()).start();
-				} catch (Exception e) {
-					e.printStackTrace();
-					logVeryBadException(e);
-				}
-			}
-		}, today.getTime(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
-		timer = new Timer();
-		run();
-	}
-
-	private void cancelTimerSafe() {
-		if (timer != null)
-			try {
-				timer.cancel();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	}
-
-	@Override
-	public synchronized void close() {
-		cancelTimerSafe();
-		if (dailyTimer != null)
-			try {
-				dailyTimer.cancel();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	}
-
 	private void setVentile(boolean on) {
-		this.on = on;
-		synchronized (ventile) {
-			for (Ventil v : ventile)
-				v.setPlanOn(on);
+		if (on != this.on) {
+			this.on = on;
+			synchronized (ventile) {
+				for (Ventil v : ventile)
+					v.setPlanOn(on);
+			}
 		}
 	}
 
@@ -120,12 +58,7 @@ public class Zeitplan implements Closeable {
 		return on;
 	}
 
-	private synchronized void run() {
-
-		LocalDate date = LocalDate.now();
-		int day = date.getDayOfWeek().ordinal();
-		LocalTime now = LocalTime.now();
-
+	public synchronized void check(int day, LocalTime now) {
 		int punkt = -2;
 		if (plan[day] != null) {
 			for (int i = 0; i < plan[day].length; i++) {
@@ -133,14 +66,6 @@ public class Zeitplan implements Closeable {
 					punkt = i;
 					break;
 				}
-			}
-
-			if (punkt>=0) {
-				Date d = Date.from(plan[day][punkt].atDate(date)
-						.atZone(ZoneId.systemDefault()).toInstant());
-				timer.schedule(
-						new ZeitplanTask(),d);
-				System.out.println("Setze Time auf "+d.toString());
 			}
 		}
 		setVentile((punkt & 1) == 1);
@@ -150,22 +75,6 @@ public class Zeitplan implements Closeable {
 		synchronized (ventile) {
 			return ventile.remove(v);
 		}
-	}
-
-	private class ZeitplanTask extends TimerTask {
-		@Override
-		public void run() {
-			try {
-				Zeitplan.this.run();
-			} catch (Exception e) {
-				e.printStackTrace();
-				logVeryBadException(e);
-			}
-		}
-	}
-
-	private void logVeryBadException(Exception e) {
-		// TODO
 	}
 
 	public String getName() {
