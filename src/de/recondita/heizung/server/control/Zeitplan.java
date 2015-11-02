@@ -126,7 +126,7 @@ public class Zeitplan implements Closeable {
 		int day = date.getDayOfWeek().ordinal();
 		LocalTime now = LocalTime.now();
 
-		int punkt = -1;
+		int punkt = -2;
 		if (plan[day] != null) {
 			for (int i = 0; i < plan[day].length; i++) {
 				if (now.isBefore((plan[day][i]))) {
@@ -135,15 +135,15 @@ public class Zeitplan implements Closeable {
 				}
 			}
 
-			if (punkt + 1 < plan[day].length) {
-				Date d = Date.from(plan[day][punkt + 1].atDate(date)
+			if (punkt>=0) {
+				Date d = Date.from(plan[day][punkt].atDate(date)
 						.atZone(ZoneId.systemDefault()).toInstant());
 				timer.schedule(
 						new ZeitplanTask(),d);
 				System.out.println("Setze Time auf "+d.toString());
 			}
 		}
-		setVentile((punkt & 1) == 0);
+		setVentile((punkt & 1) == 1);
 	}
 
 	boolean removeVentil(Ventil v) {
