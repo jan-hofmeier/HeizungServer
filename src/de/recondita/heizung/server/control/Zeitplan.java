@@ -11,11 +11,11 @@ public class Zeitplan {
 	 */
 	private LocalTime[][] plan;
 	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
-	//private Timer timer;
-	//private Timer dailyTimer;
 	private boolean on = false;
 	private String name;
 	public final int id;
+	private int lastday = -1;
+	private int lastpunkt = -1;
 
 	public int getId() {
 		return id;
@@ -59,16 +59,24 @@ public class Zeitplan {
 	}
 
 	public synchronized void check(int day, LocalTime now) {
-		int punkt = -2;
+		System.out.println("check");
 		if (plan[day] != null) {
-			for (int i = 0; i < plan[day].length; i++) {
-				if (now.isBefore((plan[day][i]))) {
-					punkt = i;
-					break;
-				}
+			int punkt = plan[day].length;
+			do {
+				punkt--;
+			} while (punkt >= 0 && plan[day][punkt].isAfter(now));
+			if (lastpunkt != punkt || lastday != day) {
+				lastday = day;
+				lastpunkt = punkt;
+				setVentile((punkt & 1) == 0);
+			}
+		} else {
+			if (lastday != day) {
+				setVentile(false);
+				lastday=day;
 			}
 		}
-		setVentile((punkt & 1) == 1);
+		System.out.println("fertig");
 	}
 
 	boolean removeVentil(Ventil v) {
