@@ -128,20 +128,19 @@ public class Zeitplan implements Closeable {
 
 		int punkt = -1;
 		if (plan[day] != null) {
-			for (int i = 0; i < plan[day].length; i++)
-			{
-				if (now.isBefore((plan[day][i])))
-				{
+			for (int i = 0; i < plan[day].length; i++) {
+				if (now.isBefore((plan[day][i]))) {
 					punkt = i;
 					break;
 				}
 			}
 
 			if (punkt + 1 < plan[day].length) {
+				Date d = Date.from(plan[day][punkt + 1].atDate(date)
+						.atZone(ZoneId.systemDefault()).toInstant());
 				timer.schedule(
-						new ZeitplanTask(),
-						Date.from(plan[day][punkt + 1].atDate(date)
-								.atZone(ZoneId.systemDefault()).toInstant()));
+						new ZeitplanTask(),d);
+				System.out.println("Setze Time auf "+d.toString());
 			}
 		}
 		setVentile((punkt & 1) == 0);
@@ -175,5 +174,23 @@ public class Zeitplan implements Closeable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("\nPlan " + name + ":\n");
+		for (int i = 0; i < plan.length; i++) {
+			sb.append("Tag ");
+			sb.append(i);
+			sb.append(":\n");
+			if (plan[i] == null)
+				sb.append("null\n");
+			else {
+				for (int j = 0; j < plan[i].length; j++) {
+					sb.append(plan[i][j].toString());
+				}
+			}
+		}
+		return sb.toString();
 	}
 }
