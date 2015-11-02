@@ -51,12 +51,13 @@ public class Ventil {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			System.out.println("Schalte Ventil "+name+ " "+gpioOn);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			System.out.println("Schalte Ventil " + name + " " + gpioOn);
+			if (gpioOn)
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 
