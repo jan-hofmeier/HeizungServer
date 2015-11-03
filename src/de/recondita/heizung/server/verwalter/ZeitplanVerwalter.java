@@ -74,7 +74,7 @@ public class ZeitplanVerwalter implements Closeable {
 			XPathExpressionException, IOException, SAXException,
 			PunktOrderException, ParserConfigurationException {
 		new ZeitplanVerwalter(Ventilverwalter.getInstance(), new XMLLoader(
-				new File("config")));
+				new File(args.length==0?"config":args[0])));
 	}
 
 }
