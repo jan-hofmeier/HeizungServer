@@ -1,7 +1,6 @@
 package de.recondita.heizung.server.verwalter;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
@@ -26,32 +24,23 @@ public class ZeitplanVerwalter implements Closeable {
 	private ArrayList<Zeitplan> zeitPlaene;
 	private ScheduledThreadPoolExecutor timer;
 
-	public ZeitplanVerwalter(Ventilverwalter ventilverwalter,
-			XMLLoader configurationLoader) throws FileNotFoundException,
-			XPathExpressionException, IOException, SAXException,
-			PunktOrderException {
+	public ZeitplanVerwalter(Ventilverwalter ventilverwalter, XMLLoader configurationLoader)
+			throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException {
 		this.ventile = ventilverwalter;
 		this.configurationLoader = configurationLoader;
 		this.configurationLoader.loadVentile(ventile);
-		this.zeitPlaene = this.configurationLoader
-				.loadZeitplaene(ventilverwalter);
-		timer = new ScheduledThreadPoolExecutor(1);
-		timer.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				check();
-			}
-		}, 0, 1, TimeUnit.MINUTES);
+		this.zeitPlaene = this.configurationLoader.loadZeitplaene(ventilverwalter);
 	}
 
 	@Override
 	public void close() throws IOException {
-		timer.shutdownNow();
+		if (timer != null)
+			timer.shutdownNow();
 	}
 
 	private void check() {
 		LocalDateTime date = LocalDateTime.now();
-		int day = (date.getDayOfWeek().ordinal()+1)%7;
+		int day = (date.getDayOfWeek().ordinal() + 1) % 7;
 		LocalTime time = date.toLocalTime();
 		synchronized (zeitPlaene) {
 			try {
@@ -69,12 +58,13 @@ public class ZeitplanVerwalter implements Closeable {
 
 	}
 
-	@SuppressWarnings("resource")
-	public static void main(String[] args) throws FileNotFoundException,
-			XPathExpressionException, IOException, SAXException,
-			PunktOrderException, ParserConfigurationException {
-		new ZeitplanVerwalter(Ventilverwalter.getInstance(), new XMLLoader(
-				new File(args.length==0?"config":args[0])));
+	public void start() {
+		timer = new ScheduledThreadPoolExecutor(1);
+		timer.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				check();
+			}
+		}, 0, 1, TimeUnit.MINUTES);
 	}
-
 }

@@ -17,15 +17,7 @@ public class Ventilverwalter {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				Collection<Integer> c = gpioMap.keySet();
-				try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
-					for (int gpio : c) {
-						unexport.write(Integer.toString(gpio));
-						unexport.flush();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				shutdown();
 			}
 		});
 	}
@@ -34,7 +26,7 @@ public class Ventilverwalter {
 		return INSTANCE;
 	}
 
-	public void createVentil(int pin, String name) throws IOException {
+	public synchronized void createVentil(int pin, String name) throws IOException {
 		Ventil v = getVentilByName(name);
 		if (v != null) {
 			int altpin = v.getGpio();
@@ -55,7 +47,7 @@ public class Ventilverwalter {
 			v = new Ventil(pin, name);
 			gpioMap.put(pin, v);
 			nameMap.put(name, v);
-			System.out.println("Ventil "+name+" erstelt");
+			System.out.println("Ventil " + name + " erstelt");
 		}
 	}
 
@@ -93,6 +85,20 @@ public class Ventilverwalter {
 
 	public Ventil getVentilByName(String name) {
 		return nameMap.get(name);
+	}
+
+	public synchronized void shutdown() {
+		Collection<Integer> c = gpioMap.keySet();
+		try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
+			for (int gpio : c) {
+				unexport.write(Integer.toString(gpio));
+				unexport.flush();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		gpioMap.clear();
+		nameMap.clear();
 	}
 
 }
