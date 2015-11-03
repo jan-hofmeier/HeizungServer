@@ -20,6 +20,7 @@ import de.recondita.heizung.xml.XMLLoader.PunktOrderException;
 public class Service implements Daemon {
 
 	private ZeitplanVerwalter zeitplanverwalter;
+	private static Ventilverwalter ventilverwalter=Ventilverwalter.getInstance();
 
 	public static void main(String[] args) throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException, ParserConfigurationException{
 		createZeitplanVerwalter(args).start();
@@ -39,7 +40,7 @@ public class Service implements Daemon {
 
 	private static ZeitplanVerwalter createZeitplanVerwalter(String[] args) throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException, ParserConfigurationException
 	{
-		return new ZeitplanVerwalter(Ventilverwalter.getInstance(),
+		return new ZeitplanVerwalter(ventilverwalter,
 				new XMLLoader(new File(args.length == 0 ? "config" : args[0])));
 	}
 	
@@ -52,6 +53,7 @@ public class Service implements Daemon {
 	@Override
 	public void stop() throws Exception {
 		zeitplanverwalter.close();
+		ventilverwalter.shutdown();
 
 	}
 
