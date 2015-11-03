@@ -59,7 +59,7 @@ public class Zeitplan {
 	}
 
 	public synchronized void check(int day, LocalTime now) {
-		System.out.println("check");
+		//System.out.println("check");
 		if (plan[day] != null) {
 			int punkt = plan[day].length;
 			do {
@@ -76,7 +76,7 @@ public class Zeitplan {
 				lastday=day;
 			}
 		}
-		System.out.println("fertig");
+		//System.out.println("fertig");
 	}
 
 	boolean removeVentil(Ventil v) {
