@@ -24,12 +24,15 @@ public class ZeitplanVerwalter implements Closeable {
 	private ArrayList<Zeitplan> zeitPlaene;
 	private ScheduledThreadPoolExecutor timer;
 
-	public ZeitplanVerwalter(Ventilverwalter ventilverwalter, XMLLoader configurationLoader)
-			throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException {
+	public ZeitplanVerwalter(Ventilverwalter ventilverwalter,
+			XMLLoader configurationLoader) throws FileNotFoundException,
+			XPathExpressionException, IOException, SAXException,
+			PunktOrderException {
 		this.ventile = ventilverwalter;
 		this.configurationLoader = configurationLoader;
 		this.configurationLoader.loadVentile(ventile);
-		this.zeitPlaene = this.configurationLoader.loadZeitplaene(ventilverwalter);
+		this.zeitPlaene = this.configurationLoader
+				.loadZeitplaene(ventilverwalter);
 	}
 
 	@Override
@@ -40,7 +43,7 @@ public class ZeitplanVerwalter implements Closeable {
 
 	private void check() {
 		LocalDateTime date = LocalDateTime.now();
-		int day = (date.getDayOfWeek().ordinal() + 1) % 7;
+		int day = date.getDayOfWeek().ordinal() % 7;
 		LocalTime time = date.toLocalTime();
 		synchronized (zeitPlaene) {
 			try {
