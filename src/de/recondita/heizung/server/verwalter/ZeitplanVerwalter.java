@@ -43,7 +43,7 @@ public class ZeitplanVerwalter implements Closeable {
 
 	private void check() {
 		LocalDateTime date = LocalDateTime.now();
-		int day = date.getDayOfWeek().ordinal() % 7;
+		int day = date.getDayOfWeek().ordinal();
 		LocalTime time = date.toLocalTime();
 		synchronized (zeitPlaene) {
 			try {
