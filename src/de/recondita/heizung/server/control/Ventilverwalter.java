@@ -66,8 +66,14 @@ public class Ventilverwalter {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		try (FileWriter out = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");) {
-			out.write("out");
+		try (FileWriter activelow = new FileWriter("/sys/class/gpio/gpio" + pin + "/active_low");) {
+			activelow.write("1");
+		}
+		try (FileWriter direction = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");
+				FileWriter value = new FileWriter("/sys/class/gpio/gpio" + pin + "/value");) {
+			direction.write("out");
+			direction.flush();
+			value.write("0");
 		}
 	}
 
