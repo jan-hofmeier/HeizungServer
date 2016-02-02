@@ -1,7 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ventile>
 	<ventil>
-		<name>Bad</name>
+		<name>WohnzimmerWest</name>
 		<gpio>17</gpio>
+	</ventil>
+	<ventil>
+		<name>WohnzimmerMitte</name>
+		<gpio>18</gpio>
+	</ventil>
+	<ventil>
+		<name>Esszimmer</name>
+		<gpio>19</gpio>
+	</ventil>
+	<ventil>
+		<name>WohnzimmerOst</name>
+		<gpio>20</gpio>
+	</ventil>
+	<ventil>
+		<name>Kueche</name>
+		<gpio>21</gpio>
+	</ventil>
+	<ventil>
+		<name>Bad</name>
+		<gpio>22</gpio>
+	</ventil>
+	<ventil>
+		<name>Jan</name>
+		<gpio>23</gpio>
+	</ventil>
+		<ventil>
+		<name>Tobi</name>
+		<gpio>14</gpio>
 	</ventil>
 </ventile>
