@@ -30,6 +30,6 @@
 	</ventil>
 		<ventil>
 		<name>Tobi</name>
-		<gpio>14</gpio>
+		<gpio>24</gpio>
 	</ventil>
 </ventile>
