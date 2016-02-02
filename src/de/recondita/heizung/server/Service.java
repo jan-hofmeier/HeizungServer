@@ -13,6 +13,7 @@ import org.apache.commons.daemon.DaemonInitException;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.server.control.Ventilverwalter;
+import de.recondita.heizung.server.network.NetworkControl;
 import de.recondita.heizung.server.verwalter.ZeitplanVerwalter;
 import de.recondita.heizung.xml.XMLLoader;
 import de.recondita.heizung.xml.XMLLoader.PunktOrderException;
@@ -21,6 +22,7 @@ public class Service implements Daemon {
 
 	private ZeitplanVerwalter zeitplanverwalter;
 	private static Ventilverwalter ventilverwalter=Ventilverwalter.getInstance();
+	private NetworkControl networkControl;
 
 	public static void main(String[] args) throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException, ParserConfigurationException{
 		createZeitplanVerwalter(args).start();
@@ -35,7 +37,7 @@ public class Service implements Daemon {
 	public void init(DaemonContext context) throws DaemonInitException, Exception, XPathExpressionException,
 			IOException, SAXException, PunktOrderException, ParserConfigurationException {
 		this.zeitplanverwalter=createZeitplanVerwalter(context.getArguments()) ;
-
+		networkControl= new NetworkControl(1001);
 	}
 
 	private static ZeitplanVerwalter createZeitplanVerwalter(String[] args) throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException, ParserConfigurationException
@@ -52,6 +54,7 @@ public class Service implements Daemon {
 
 	@Override
 	public void stop() throws Exception {
+		networkControl.close();
 		zeitplanverwalter.close();
 		ventilverwalter.shutdown();
 
