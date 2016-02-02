@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetworkControl implements Closeable {
 
-	ServerSocket serverSocket;
-	AtomicBoolean run = new AtomicBoolean(true);
-	ArrayList<Client> clients = new ArrayList<Client>();
+	private ServerSocket serverSocket;
+	private AtomicBoolean run = new AtomicBoolean(true);
+	private ArrayList<Client> clients = new ArrayList<Client>();
 
 	public NetworkControl(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
