@@ -3,6 +3,7 @@ package de.recondita.heizung.server.control;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -12,6 +13,8 @@ public class Ventilverwalter {
 
 	private final HashMap<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
 	private final HashMap<String, Ventil> nameMap = new HashMap<String, Ventil>();
+	
+	private ArrayList<VentilStateListener> listener=new ArrayList<VentilStateListener>();
 
 	private Ventilverwalter() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -44,7 +47,7 @@ public class Ventilverwalter {
 				v.setGpio(-1);
 			} else
 				enable(pin);
-			v = new Ventil(pin, name);
+			v = new Ventil(pin, name,this);
 			gpioMap.put(pin, v);
 			nameMap.put(name, v);
 			System.out.println("Ventil " + name + " erstelt");
@@ -106,5 +109,18 @@ public class Ventilverwalter {
 		gpioMap.clear();
 		nameMap.clear();
 	}
-
+	
+	void notifyChange(Ventil v){
+		synchronized(listener){
+			for(VentilStateListener l: listener){
+				l.stateChanged(v.getName(), v.getMode(), v.isOn());
+			}
+		}
+	}
+	
+	public void addChangeListener(VentilStateListener l){
+		synchronized(listener){
+			listener.add(l);
+		}
+	}
 }

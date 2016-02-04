@@ -11,12 +11,14 @@ public class Ventil {
 	private String name;
 	private Zeitplan zeitplan;
 	private int gpio;
+	private Ventilverwalter ventilverwalter;
 
 	private static final Object lock = new Object();
 
-	public Ventil(int gpio, String name) {
+	public Ventil(int gpio, String name, Ventilverwalter ventilverwalter) {
 		this.gpio = gpio;
 		this.name = name;
+		this.ventilverwalter = ventilverwalter;
 		setValue();
 	}
 
@@ -45,6 +47,7 @@ public class Ventil {
 	private void setValue() {
 		synchronized (lock) {
 			gpioOn = mode == Mode.ON || (mode == Mode.AUTO && planOn);
+			ventilverwalter.notifyChange(this);
 			if (gpio >= 0)
 				try (FileWriter fw = new FileWriter("/sys/class/gpio/gpio" + gpio + "/value");) {
 					fw.write(gpioOn ? "1" : "0");
@@ -52,12 +55,11 @@ public class Ventil {
 					e.printStackTrace();
 				}
 			System.out.println("Schalte Ventil " + name + " " + gpioOn);
-			if (gpioOn)
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
