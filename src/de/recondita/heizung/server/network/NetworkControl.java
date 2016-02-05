@@ -5,12 +5,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NetworkControl implements Closeable {
 
 	private ServerSocket serverSocket;
 	private AtomicBoolean run = new AtomicBoolean(true);
 	private ArrayList<Client> clients = new ArrayList<Client>();
+	
+	private final static Logger LOGGER = Logger
+			.getLogger(NetworkControl.class.getName());
 
 	public NetworkControl(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
@@ -24,7 +29,7 @@ public class NetworkControl implements Closeable {
 					try {
 						clients.add(new Client(serverSocket.accept()));
 					} catch (IOException e) {
-						e.printStackTrace();
+						LOGGER.log(Level.WARNING, e.getMessage(), e);
 					}
 				}
 			}
@@ -40,7 +45,7 @@ public class NetworkControl implements Closeable {
 				try {
 					client.close();
 				} catch (Exception e) {
-					e.printStackTrace();
+					LOGGER.log(Level.WARNING, e.getMessage(), e);
 				}
 			}
 		}

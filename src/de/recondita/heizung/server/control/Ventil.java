@@ -2,6 +2,7 @@ package de.recondita.heizung.server.control;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class Ventil {
 
@@ -14,6 +15,9 @@ public class Ventil {
 	private Ventilverwalter ventilverwalter;
 
 	private static final Object lock = new Object();
+	
+	private final static Logger LOGGER = Logger
+			.getLogger(Ventilverwalter.class.getName());
 
 	public Ventil(int gpio, String name, Ventilverwalter ventilverwalter) {
 		this.gpio = gpio;
@@ -54,7 +58,7 @@ public class Ventil {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			System.out.println("Schalte Ventil " + name + " " + gpioOn);
+			LOGGER.info("Schalte Ventil " + name + " " + gpioOn);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

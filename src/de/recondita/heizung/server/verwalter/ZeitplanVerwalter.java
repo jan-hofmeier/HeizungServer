@@ -8,6 +8,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -23,6 +25,9 @@ public class ZeitplanVerwalter implements Closeable {
 	private XMLLoader configurationLoader;
 	private ArrayList<Zeitplan> zeitPlaene;
 	private ScheduledThreadPoolExecutor timer;
+
+	private final static Logger LOGGER = Logger
+			.getLogger(ZeitplanVerwalter.class.getName());
 
 	public ZeitplanVerwalter(Ventilverwalter ventilverwalter,
 			XMLLoader configurationLoader) throws FileNotFoundException,
@@ -45,20 +50,20 @@ public class ZeitplanVerwalter implements Closeable {
 		LocalDateTime date = LocalDateTime.now();
 		int day = date.getDayOfWeek().ordinal();
 		LocalTime time = date.toLocalTime();
-		synchronized (zeitPlaene) {
-			try {
+		try {
+			synchronized (zeitPlaene) {
 				for (Zeitplan zp : zeitPlaene) {
 					zp.check(day, time);
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				setFatalError();
 			}
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			setFatalError();
 		}
 	}
 
 	private void setFatalError() {
-
+		//TODO
 	}
 
 	public void start() {

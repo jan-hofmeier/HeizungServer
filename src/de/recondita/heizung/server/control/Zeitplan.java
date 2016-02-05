@@ -2,6 +2,7 @@ package de.recondita.heizung.server.control;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class Zeitplan {
 
@@ -16,6 +17,9 @@ public class Zeitplan {
 	public final int id;
 	private int lastday = -1;
 	private int lastpunkt = -1;
+	
+	private final static Logger LOGGER = Logger
+			.getLogger(Zeitplan.class.getName());
 
 	public int getId() {
 		return id;
@@ -59,7 +63,7 @@ public class Zeitplan {
 	}
 
 	public synchronized void check(int day, LocalTime now) {
-		//System.out.println("check");
+		LOGGER.fine("check Zeitplan "+ getName());
 		if (plan[day] != null) {
 			int punkt = plan[day].length;
 			do {
@@ -76,7 +80,7 @@ public class Zeitplan {
 				lastday=day;
 			}
 		}
-		//System.out.println("fertig");
+		LOGGER.fine("checked Zeitplan "+ getName());
 	}
 
 	boolean removeVentil(Ventil v) {

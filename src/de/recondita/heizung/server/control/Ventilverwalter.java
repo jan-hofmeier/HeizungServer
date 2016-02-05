@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Ventilverwalter {
 
@@ -16,6 +18,9 @@ public class Ventilverwalter {
 	
 	private ArrayList<VentilStateListener> listener=new ArrayList<VentilStateListener>();
 
+	private final static Logger LOGGER = Logger
+			.getLogger(Ventilverwalter.class.getName());
+	
 	private Ventilverwalter() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -50,7 +55,7 @@ public class Ventilverwalter {
 			v = new Ventil(pin, name,this);
 			gpioMap.put(pin, v);
 			nameMap.put(name, v);
-			System.out.println("Ventil " + name + " erstelt");
+			LOGGER.info("Ventil " + name + " erstelt");
 		}
 	}
 
@@ -62,12 +67,12 @@ public class Ventilverwalter {
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
 			}
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
 		try (FileWriter activelow = new FileWriter("/sys/class/gpio/gpio" + pin + "/active_low");) {
 			activelow.write("1");
@@ -84,7 +89,7 @@ public class Ventilverwalter {
 		try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
 			unexport.write(Integer.toString(pin));
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
 	}
 
@@ -104,7 +109,7 @@ public class Ventilverwalter {
 				unexport.flush();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
 		gpioMap.clear();
 		nameMap.clear();

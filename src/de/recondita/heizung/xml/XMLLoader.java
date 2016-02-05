@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,6 +44,8 @@ public class XMLLoader {
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
 	private final XPathExpression planVentilePath;
+	
+	private final static Logger LOGGER=Logger.getLogger(XMLLoader.class.getName());
 
 	public XMLLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -109,7 +112,7 @@ public class XMLLoader {
 		for(int i=0; i<ventilNodes.getLength(); i++)
 		{
 			String ventilName=ventilNodes.item(i).getTextContent();
-			System.out.println("Füge Ventil " +ventilName +" zu Plan " +name +" hinzu");
+			LOGGER.info("Fuege Ventil " +ventilName +" zu Plan " +name +" hinzu");
 			ventilverwalter.getVentilByName(ventilName).setZeitplan(zp);
 		}
 		return zp;
@@ -132,7 +135,7 @@ public class XMLLoader {
 
 	private LocalTime[] evaluateSchaltpunkte(Node schaltpunkte) throws XPathExpressionException, PunktOrderException {
 		NodeList punktNodes = schaltpunkte.getChildNodes();
-		System.out.println(punktNodes.getLength()+ " Schaltpunkte");
+		LOGGER.info(punktNodes.getLength()+ " Schaltpunkte");
 		TreeSet<LocalTime> an = new TreeSet<LocalTime>();
 		TreeSet<LocalTime> aus = new TreeSet<LocalTime>();
 		for (int i = 0; i < punktNodes.getLength(); i++) {
@@ -151,7 +154,7 @@ public class XMLLoader {
 		Iterator<LocalTime> ausIt = aus.iterator();
 		for (int i = 0; i < ret.length; i++) {
 			ret[i] = i % 2 == 0 ? anIt.next() : ausIt.next();
-			System.out.println("Schaltpunkt "+ ret[i]);
+			LOGGER.info("Schaltpunkt "+ ret[i]);
 			if (i > 0 && ret[i].isBefore(ret[i - 1]))
 				throw new PunktOrderException(ret[i], ret[i - 1]);
 		}
