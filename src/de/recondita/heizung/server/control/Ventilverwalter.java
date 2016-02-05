@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Ventilverwalter {
+public class Ventilverwalter implements Iterable<Ventil>{
 
 	private static final Ventilverwalter INSTANCE = new Ventilverwalter();
 
@@ -128,4 +129,10 @@ public class Ventilverwalter {
 			listener.add(l);
 		}
 	}
+
+	@Override
+	public Iterator<Ventil> iterator() {
+		return gpioMap.values().iterator();
+	}
+
 }

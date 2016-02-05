@@ -49,7 +49,7 @@ public class Service implements Daemon {
 			throw e;
 		}
 		try {
-			networkControl = new NetworkControl(1001);
+			networkControl = new NetworkControl(1001,ventilverwalter);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}

@@ -8,17 +8,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.recondita.heizung.server.control.Ventilverwalter;
+
 public class NetworkControl implements Closeable {
 
 	private ServerSocket serverSocket;
 	private AtomicBoolean run = new AtomicBoolean(true);
 	private ArrayList<Client> clients = new ArrayList<Client>();
+	private Ventilverwalter ventilverwalter;
 	
 	private final static Logger LOGGER = Logger
 			.getLogger(NetworkControl.class.getName());
 
-	public NetworkControl(int port) throws IOException {
+	public NetworkControl(int port,Ventilverwalter ventilverwalter) throws IOException {
 		serverSocket = new ServerSocket(port);
+		this.ventilverwalter=ventilverwalter;
 	}
 
 	public void start() {
