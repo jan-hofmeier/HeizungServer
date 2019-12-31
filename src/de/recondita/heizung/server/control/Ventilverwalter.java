@@ -64,7 +64,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		try (FileWriter export = new FileWriter("/sys/class/gpio/export");) {
 			export.write(Integer.toString(pin));
 		}
-		while (!new File("/sys/class/gpio/gpio" + pin).exists())
+		while (!new File("/sys/class/gpio/gpio" + pin + "/active_low").exists())
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException e) {
