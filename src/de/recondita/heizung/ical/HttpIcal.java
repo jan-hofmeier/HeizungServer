@@ -73,7 +73,7 @@ public class HttpIcal {
 
 		Collection<CalendarComponent> eventsNow = filter.filter(calendar.getComponents(Component.VEVENT));
 		
-		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue()).collect(Collectors.toList());
+		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase()).collect(Collectors.toList());
 
 	}
 

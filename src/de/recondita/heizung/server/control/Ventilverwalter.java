@@ -133,7 +133,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 
 	public void setActiveGroups(Set<String> activeGroups) {
 		for(Ventil v: this) {
-			v.setPlanOn(activeGroups.contains(v.getGroup()));
+			v.setPlanOn(activeGroups.contains(v.getGroup().toLowerCase()));
 		}
 	}
 }
