@@ -2,10 +2,12 @@
 <ventile>
 	<ventil>
 		<name>WohnzimmerWest</name>
+		<group>Wohnzimmer</group>
 		<gpio>17</gpio>
 	</ventil>
 	<ventil>
 		<name>WohnzimmerMitte</name>
+		<group>Wohnzimmer</group>
 		<gpio>18</gpio>
 	</ventil>
 	<ventil>
@@ -14,6 +16,7 @@
 	</ventil>
 	<ventil>
 		<name>WohnzimmerOst</name>
+		<group>Wohnzimmer</group>
 		<gpio>20</gpio>
 	</ventil>
 	<ventil>
