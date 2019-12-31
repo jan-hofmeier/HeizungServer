@@ -68,11 +68,6 @@ public class ZeitplanVerwalter implements Closeable {
 
 	public void start() {
 		timer = new ScheduledThreadPoolExecutor(1);
-		timer.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				check();
-			}
-		}, 0, 1, TimeUnit.MINUTES);
+		timer.scheduleAtFixedRate(() -> check() , 0, 1, TimeUnit.MINUTES);
 	}
 }
