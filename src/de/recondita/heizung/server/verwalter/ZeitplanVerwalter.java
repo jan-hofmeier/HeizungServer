@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -39,6 +41,7 @@ public class ZeitplanVerwalter implements Closeable {
 		try {
 			iCalPlaene = configurationLoader.loadIcal();
 		} catch (Exception e) {
+			LOGGER.info("Fallback to XML schedule");
 			this.zeitPlaene = this.configurationLoader.loadZeitplaene(ventilverwalter);
 		}
 	}
@@ -66,9 +69,11 @@ public class ZeitplanVerwalter implements Closeable {
 	}
 	
 	private void checkICal() {
+		Set<String> activeGroups = new HashSet<>();
 		for(HttpIcal ical: iCalPlaene) {
-			ical.getActiveGroups();
+			activeGroups.addAll(ical.getActiveGroups());
 		}
+		ventile.setActiveGroups(activeGroups);
 	}
 	
 	private void check(){

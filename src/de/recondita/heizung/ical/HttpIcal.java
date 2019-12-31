@@ -37,6 +37,7 @@ public class HttpIcal {
 
 	public HttpIcal(URL icalUrl) {
 		this.url = icalUrl;
+		LOGGER.info("Create HTTP iCal for " + url);
 	}
 
 	private Calendar requestCalendar() throws IOException, ParserException {
