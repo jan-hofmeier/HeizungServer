@@ -6,6 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,6 +31,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import de.recondita.heizung.ical.HttpIcal;
 import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
@@ -47,8 +51,8 @@ public class ConfigLoader {
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
 	private final XPathExpression planGroupPath;
-	
-	private final static Logger LOGGER=Logger.getLogger(ConfigLoader.class.getName());
+
+	private final static Logger LOGGER = Logger.getLogger(ConfigLoader.class.getName());
 
 	public ConfigLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -61,14 +65,13 @@ public class ConfigLoader {
 		groupPath = xPath.compile("group");
 		schaltpunktePath = xPath.compile("schaltpunkte");
 		tagePath = xPath.compile("tage/tag");
-		planGroupPath= xPath.compile("groups/group");
+		planGroupPath = xPath.compile("groups/group");
 		this.configdir = configdir;
 	}
 
 	public void loadVentile(Ventilverwalter ventilverwalter)
 			throws FileNotFoundException, IOException, XPathExpressionException, SAXException {
-		try (FileInputStream fis = new FileInputStream(
-				configdir.getAbsolutePath() + File.separator + "Ventile.xml");) {
+		try (FileInputStream fis = new FileInputStream(configdir.getAbsolutePath() + File.separator + "Ventile.xml");) {
 			loadVentile(new InputStreamReader(fis), ventilverwalter);
 		}
 	}
@@ -80,7 +83,8 @@ public class ConfigLoader {
 		NodeList ventile = (NodeList) ventilePath.evaluate(xmlDocument, XPathConstants.NODESET);
 		for (int i = 0; i < ventile.getLength(); i++) {
 			Node v = ventile.item(i);
-			ventilverwalter.createVentil(Integer.parseInt(gpioPath.evaluate(v)), namePath.evaluate(v), groupPath.evaluate(v));
+			ventilverwalter.createVentil(Integer.parseInt(gpioPath.evaluate(v)), namePath.evaluate(v),
+					groupPath.evaluate(v));
 		}
 	}
 
@@ -91,7 +95,7 @@ public class ConfigLoader {
 			return loadZeitplaene(new InputStreamReader(fis), ventilverwalter);
 		}
 	}
-	
+
 	public ArrayList<Zeitplan> loadZeitplaene(Reader xml, Ventilverwalter ventilverwalter)
 			throws SAXException, IOException, XPathExpressionException, PunktOrderException {
 		Document xmlDocument = builder.parse(new InputSource(xml));
@@ -100,25 +104,25 @@ public class ConfigLoader {
 		ArrayList<Zeitplan> ret = new ArrayList<Zeitplan>(zeitPlaene.getLength());
 
 		for (int i = 0; i < zeitPlaene.getLength(); i++) {
-			ret.add(evaluateZeitplan(zeitPlaene.item(i),ventilverwalter));
+			ret.add(evaluateZeitplan(zeitPlaene.item(i), ventilverwalter));
 		}
 		return ret;
 	}
 
-	private Zeitplan evaluateZeitplan(Node zeitplanNode, Ventilverwalter ventilverwalter) throws XPathExpressionException, PunktOrderException {
+	private Zeitplan evaluateZeitplan(Node zeitplanNode, Ventilverwalter ventilverwalter)
+			throws XPathExpressionException, PunktOrderException {
 		int id = Integer.parseInt(zeitplanNode.getAttributes().getNamedItem("id").getTextContent());
 		String name = namePath.evaluate(zeitplanNode);
 		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
 		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
 		NodeList groupNodes = (NodeList) planGroupPath.evaluate(zeitplanNode, XPathConstants.NODESET);
 		List<Ventil> ventile = new ArrayList<>();
-		for(int i=0; i<groupNodes.getLength(); i++)
-		{
-			String groupName=groupNodes.item(i).getTextContent();
-			LOGGER.info("Fuege Gruppe " +groupName +" zu Plan " +name +" hinzu");
+		for (int i = 0; i < groupNodes.getLength(); i++) {
+			String groupName = groupNodes.item(i).getTextContent();
+			LOGGER.info("Fuege Gruppe " + groupName + " zu Plan " + name + " hinzu");
 			ventile.addAll(ventilverwalter.getGroup(groupName));
 		}
-		Zeitplan zp= new Zeitplan(id, name, plan, ventile);
+		Zeitplan zp = new Zeitplan(id, name, plan, ventile);
 		return zp;
 	}
 
@@ -139,7 +143,7 @@ public class ConfigLoader {
 
 	private LocalTime[] evaluateSchaltpunkte(Node schaltpunkte) throws XPathExpressionException, PunktOrderException {
 		NodeList punktNodes = schaltpunkte.getChildNodes();
-		LOGGER.info(punktNodes.getLength()+ " Schaltpunkte");
+		LOGGER.info(punktNodes.getLength() + " Schaltpunkte");
 		TreeSet<LocalTime> an = new TreeSet<LocalTime>();
 		TreeSet<LocalTime> aus = new TreeSet<LocalTime>();
 		for (int i = 0; i < punktNodes.getLength(); i++) {
@@ -158,7 +162,7 @@ public class ConfigLoader {
 		Iterator<LocalTime> ausIt = aus.iterator();
 		for (int i = 0; i < ret.length; i++) {
 			ret[i] = i % 2 == 0 ? anIt.next() : ausIt.next();
-			LOGGER.info("Schaltpunkt "+ ret[i]);
+			LOGGER.info("Schaltpunkt " + ret[i]);
 			if (i > 0 && ret[i].isBefore(ret[i - 1]))
 				throw new PunktOrderException(ret[i], ret[i - 1]);
 		}
@@ -176,5 +180,13 @@ public class ConfigLoader {
 		public PunktOrderException(LocalTime before, LocalTime after) {
 			super(before.toString() + " before " + after.toString());
 		}
+	}
+
+	public HttpIcal[] loadIcal() throws IOException {
+		String[] urls = Files.lines(Paths.get(configdir + File.separator + "icalurls.txt")).toArray(String[]::new);
+		HttpIcal[] icals = new HttpIcal[urls.length];
+		for(int i=0; i<urls.length; i++)
+			icals[i] = new HttpIcal(new URL(urls[i]));
+		return icals;
 	}
 }

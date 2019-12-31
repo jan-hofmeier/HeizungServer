@@ -9,22 +9,22 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Ventilverwalter implements Iterable<Ventil>{
+public class Ventilverwalter implements Iterable<Ventil> {
 
 	private static final Ventilverwalter INSTANCE = new Ventilverwalter();
 
 	private final Map<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
 	private final Map<String, Ventil> nameMap = new HashMap<String, Ventil>();
 	private final Map<String, List<Ventil>> groupMap = new HashMap<String, List<Ventil>>();
-	
-	private ArrayList<VentilStateListener> listener=new ArrayList<VentilStateListener>();
 
-	private final static Logger LOGGER = Logger
-			.getLogger(Ventilverwalter.class.getName());
-	
+	private ArrayList<VentilStateListener> listener = new ArrayList<VentilStateListener>();
+
+	private final static Logger LOGGER = Logger.getLogger(Ventilverwalter.class.getName());
+
 	private Ventilverwalter() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -40,30 +40,24 @@ public class Ventilverwalter implements Iterable<Ventil>{
 
 	public synchronized void createVentil(int pin, String name, String group) throws IOException {
 		Ventil v = getVentilByName(name);
-		if (v != null) {
-			int altpin = v.getGpio();
-			if (v.getGpio() != pin) {
-				gpioMap.remove(altpin);
-				disable(altpin);
-				enable(pin);
-				v.setGpio(pin);
-				getVentilByPin(pin).setGpio(-1);
-				gpioMap.put(pin, v);
-			}
-		} else {
-			v = getVentilByPin(pin);
-			if (v != null) {
-				v.setGpio(-1);
-			} else
-				enable(pin);
-			v = new Ventil(pin, name,this);
-			gpioMap.put(pin, v);
-			nameMap.put(name, v);
-			LOGGER.info("Ventil " + name + " erstelt");
-		}
-		if(group == null)
+		if (group == null)
 			group = name;
-		groupMap.getOrDefault(group,new ArrayList<Ventil>()).add(v);
+		
+		if (v != null) {
+			LOGGER.severe("Ventil already exists: " + name);
+			return;
+		}
+		v = getVentilByPin(pin);
+		if (v != null) {
+			LOGGER.severe("GPIO already in use: " + pin);
+		} else
+			enable(pin);
+		v = new Ventil(pin, name, group, this);
+		gpioMap.put(pin, v);
+		nameMap.put(name, v);
+		LOGGER.info("Ventil " + name + " erstelt");
+
+		groupMap.getOrDefault(group, new ArrayList<Ventil>()).add(v);
 	}
 
 	private void enable(int pin) throws IOException {
@@ -92,14 +86,6 @@ public class Ventilverwalter implements Iterable<Ventil>{
 		}
 	}
 
-	private void disable(int pin) {
-		try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
-			unexport.write(Integer.toString(pin));
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-	}
-
 	public Ventil getVentilByPin(int pin) {
 		return gpioMap.get(pin);
 	}
@@ -107,7 +93,7 @@ public class Ventilverwalter implements Iterable<Ventil>{
 	public Ventil getVentilByName(String name) {
 		return nameMap.get(name);
 	}
-	
+
 	public List<Ventil> getGroup(String group) {
 		return groupMap.get(group);
 	}
@@ -125,17 +111,17 @@ public class Ventilverwalter implements Iterable<Ventil>{
 		gpioMap.clear();
 		nameMap.clear();
 	}
-	
-	void notifyChange(Ventil v){
-		synchronized(listener){
-			for(VentilStateListener l: listener){
+
+	void notifyChange(Ventil v) {
+		synchronized (listener) {
+			for (VentilStateListener l : listener) {
 				l.stateChanged(v.getName(), v.getMode(), v.isOn());
 			}
 		}
 	}
-	
-	public void addChangeListener(VentilStateListener l){
-		synchronized(listener){
+
+	public void addChangeListener(VentilStateListener l) {
+		synchronized (listener) {
 			listener.add(l);
 		}
 	}
@@ -145,4 +131,9 @@ public class Ventilverwalter implements Iterable<Ventil>{
 		return gpioMap.values().iterator();
 	}
 
+	public void setActiveGroups(Set<String> activeGroups) {
+		for(Ventil v: this) {
+			v.setPlanOn(activeGroups.contains(v.getGroup()));
+		}
+	}
 }

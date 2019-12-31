@@ -15,6 +15,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
+import de.recondita.heizung.ical.HttpIcal;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
 import de.recondita.heizung.xml.ConfigLoader;
@@ -25,19 +26,21 @@ public class ZeitplanVerwalter implements Closeable {
 	private ConfigLoader configurationLoader;
 	private ArrayList<Zeitplan> zeitPlaene;
 	private ScheduledThreadPoolExecutor timer;
+	private HttpIcal[] iCalPlaene;
 
-	private final static Logger LOGGER = Logger
-			.getLogger(ZeitplanVerwalter.class.getName());
+	private final static Logger LOGGER = Logger.getLogger(ZeitplanVerwalter.class.getName());
 
-	public ZeitplanVerwalter(Ventilverwalter ventilverwalter,
-			ConfigLoader configurationLoader) throws FileNotFoundException,
-			XPathExpressionException, IOException, SAXException,
-			PunktOrderException {
+	public ZeitplanVerwalter(Ventilverwalter ventilverwalter, ConfigLoader configurationLoader)
+			throws FileNotFoundException, XPathExpressionException, IOException, SAXException, PunktOrderException {
 		this.ventile = ventilverwalter;
 		this.configurationLoader = configurationLoader;
 		this.configurationLoader.loadVentile(ventile);
-		this.zeitPlaene = this.configurationLoader
-				.loadZeitplaene(ventilverwalter);
+
+		try {
+			iCalPlaene = configurationLoader.loadIcal();
+		} catch (Exception e) {
+			this.zeitPlaene = this.configurationLoader.loadZeitplaene(ventilverwalter);
+		}
 	}
 
 	@Override
@@ -46,7 +49,7 @@ public class ZeitplanVerwalter implements Closeable {
 			timer.shutdownNow();
 	}
 
-	private void check() {
+	private void checkXML() {
 		LocalDateTime date = LocalDateTime.now();
 		int day = date.getDayOfWeek().ordinal();
 		LocalTime time = date.toLocalTime();
@@ -61,13 +64,26 @@ public class ZeitplanVerwalter implements Closeable {
 			setFatalError();
 		}
 	}
+	
+	private void checkICal() {
+		for(HttpIcal ical: iCalPlaene) {
+			ical.getActiveGroups();
+		}
+	}
+	
+	private void check(){
+		if(iCalPlaene == null)
+			checkXML();
+		else
+			checkICal();
+	}
 
 	private void setFatalError() {
-		//TODO
+		// TODO
 	}
 
 	public void start() {
 		timer = new ScheduledThreadPoolExecutor(1);
-		timer.scheduleAtFixedRate(() -> check() , 0, 1, TimeUnit.MINUTES);
+		timer.scheduleAtFixedRate(() -> check(), 0, 1, TimeUnit.MINUTES);
 	}
 }
