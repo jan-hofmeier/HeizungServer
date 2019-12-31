@@ -67,7 +67,6 @@ public class HttpIcal {
 
 		DateTime now = new DateTime(java.util.Calendar.getInstance().getTime());
 
-		// create a period starting now with a duration of one (1) day..
 		Predicate<CalendarComponent> periodRule = new PeriodRule<>(new Period(now, now));
 		Filter<CalendarComponent> filter = new Filter<>(periodRule);
 
