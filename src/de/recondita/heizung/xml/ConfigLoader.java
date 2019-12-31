@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
@@ -27,6 +28,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
 
@@ -41,9 +43,10 @@ public class ConfigLoader {
 	private final XPathExpression namePath;
 	private final XPathExpression ventilePath;
 	private final XPathExpression gpioPath;
+	private final XPathExpression groupPath;
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
-	private final XPathExpression planVentilePath;
+	private final XPathExpression planGroupPath;
 	
 	private final static Logger LOGGER=Logger.getLogger(ConfigLoader.class.getName());
 
@@ -55,9 +58,10 @@ public class ConfigLoader {
 		namePath = xPath.compile("name");
 		ventilePath = xPath.compile("/ventile/ventil");
 		gpioPath = xPath.compile("gpio");
+		groupPath = xPath.compile("group");
 		schaltpunktePath = xPath.compile("schaltpunkte");
 		tagePath = xPath.compile("tage/tag");
-		planVentilePath= xPath.compile("ventile/ventil");
+		planGroupPath= xPath.compile("groups/group");
 		this.configdir = configdir;
 	}
 
@@ -74,10 +78,9 @@ public class ConfigLoader {
 		Document xmlDocument = builder.parse(new InputSource(xml));
 
 		NodeList ventile = (NodeList) ventilePath.evaluate(xmlDocument, XPathConstants.NODESET);
-
 		for (int i = 0; i < ventile.getLength(); i++) {
 			Node v = ventile.item(i);
-			ventilverwalter.createVentil(Integer.parseInt(gpioPath.evaluate(v)), namePath.evaluate(v));
+			ventilverwalter.createVentil(Integer.parseInt(gpioPath.evaluate(v)), namePath.evaluate(v), groupPath.evaluate(v));
 		}
 	}
 
@@ -107,14 +110,15 @@ public class ConfigLoader {
 		String name = namePath.evaluate(zeitplanNode);
 		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
 		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
-		Zeitplan zp= new Zeitplan(id, name, plan);
-		NodeList ventilNodes = (NodeList) planVentilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
-		for(int i=0; i<ventilNodes.getLength(); i++)
+		NodeList groupNodes = (NodeList) planGroupPath.evaluate(zeitplanNode, XPathConstants.NODESET);
+		List<Ventil> ventile = new ArrayList<>();
+		for(int i=0; i<groupNodes.getLength(); i++)
 		{
-			String ventilName=ventilNodes.item(i).getTextContent();
-			LOGGER.info("Fuege Ventil " +ventilName +" zu Plan " +name +" hinzu");
-			ventilverwalter.getVentilByName(ventilName).setZeitplan(zp);
+			String groupName=groupNodes.item(i).getTextContent();
+			LOGGER.info("Fuege Gruppe " +groupName +" zu Plan " +name +" hinzu");
+			ventile.addAll(ventilverwalter.getGroup(groupName));
 		}
+		Zeitplan zp= new Zeitplan(id, name, plan, ventile);
 		return zp;
 	}
 

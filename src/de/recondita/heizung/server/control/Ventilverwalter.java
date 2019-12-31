@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,8 +16,9 @@ public class Ventilverwalter implements Iterable<Ventil>{
 
 	private static final Ventilverwalter INSTANCE = new Ventilverwalter();
 
-	private final HashMap<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
-	private final HashMap<String, Ventil> nameMap = new HashMap<String, Ventil>();
+	private final Map<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
+	private final Map<String, Ventil> nameMap = new HashMap<String, Ventil>();
+	private final Map<String, List<Ventil>> groupMap = new HashMap<String, List<Ventil>>();
 	
 	private ArrayList<VentilStateListener> listener=new ArrayList<VentilStateListener>();
 
@@ -35,7 +38,7 @@ public class Ventilverwalter implements Iterable<Ventil>{
 		return INSTANCE;
 	}
 
-	public synchronized void createVentil(int pin, String name) throws IOException {
+	public synchronized void createVentil(int pin, String name, String group) throws IOException {
 		Ventil v = getVentilByName(name);
 		if (v != null) {
 			int altpin = v.getGpio();
@@ -58,6 +61,9 @@ public class Ventilverwalter implements Iterable<Ventil>{
 			nameMap.put(name, v);
 			LOGGER.info("Ventil " + name + " erstelt");
 		}
+		if(group == null)
+			group = name;
+		groupMap.getOrDefault(group,new ArrayList<Ventil>()).add(v);
 	}
 
 	private void enable(int pin) throws IOException {
@@ -100,6 +106,10 @@ public class Ventilverwalter implements Iterable<Ventil>{
 
 	public Ventil getVentilByName(String name) {
 		return nameMap.get(name);
+	}
+	
+	public List<Ventil> getGroup(String group) {
+		return groupMap.get(group);
 	}
 
 	public synchronized void shutdown() {

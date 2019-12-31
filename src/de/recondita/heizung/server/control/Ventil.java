@@ -79,20 +79,8 @@ public class Ventil {
 		return gpioOn;
 	}
 
-	public synchronized void setZeitplan(Zeitplan zp) {
-		removeFromZeitplan();
-		this.zeitplan = zp;
-		zp.addVentil(this);
-	}
-
 	public Zeitplan getZeitplan() {
 		return this.zeitplan;
 	}
 
-	public synchronized void removeFromZeitplan() {
-		if (zeitplan != null) {
-			zeitplan.removeVentil(this);
-			setZeitplan(null);
-		}
-	}
 }

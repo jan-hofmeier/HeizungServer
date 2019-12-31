@@ -45,8 +45,8 @@
 				</schaltpunkte>
 			</tagesplan>
 		</tagesplaene>
-		<ventile>
-			<ventil>WohnzimmerWest</ventil>
-		</ventile>
+		<groups>
+			<group>Wohnzimmer</group>
+		</groups>
 	</zeitplan>
 </zeitplaene>

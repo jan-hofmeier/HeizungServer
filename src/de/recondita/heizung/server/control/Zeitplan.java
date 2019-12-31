@@ -2,6 +2,7 @@ package de.recondita.heizung.server.control;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Zeitplan {
@@ -11,7 +12,7 @@ public class Zeitplan {
 	 * aus
 	 */
 	private LocalTime[][] plan;
-	private ArrayList<Ventil> ventile = new ArrayList<Ventil>();
+	private ArrayList<Ventil> ventile;
 	private boolean on = false;
 	private String name;
 	public final int id;
@@ -25,17 +26,10 @@ public class Zeitplan {
 		return id;
 	}
 
-	public Zeitplan(int id, String name, LocalTime[][] plan) {
+	public Zeitplan(int id, String name, LocalTime[][] plan, List<Ventil> ventile) {
 		this.id = id;
 		this.setName(name);
 		setPlan(plan);
-	}
-
-	void addVentil(Ventil ventil) {
-		synchronized (ventile) {
-			ventile.add(ventil);
-			ventil.setPlanOn(on);
-		}
 	}
 
 	public synchronized void setPlan(LocalTime[][] plan) {
