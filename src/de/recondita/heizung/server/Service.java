@@ -16,8 +16,8 @@ import org.xml.sax.SAXException;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.network.NetworkControl;
 import de.recondita.heizung.server.verwalter.ZeitplanVerwalter;
-import de.recondita.heizung.xml.XMLLoader;
-import de.recondita.heizung.xml.XMLLoader.PunktOrderException;
+import de.recondita.heizung.xml.ConfigLoader;
+import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
 
 public class Service implements Daemon {
 
@@ -59,7 +59,7 @@ public class Service implements Daemon {
 			throws FileNotFoundException, XPathExpressionException,
 			IOException, SAXException, PunktOrderException,
 			ParserConfigurationException {
-		return new ZeitplanVerwalter(ventilverwalter, new XMLLoader(new File(
+		return new ZeitplanVerwalter(ventilverwalter, new ConfigLoader(new File(
 				args.length == 0 ? "config" : args[0])));
 	}
 

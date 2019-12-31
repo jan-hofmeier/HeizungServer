@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
 
-public class XMLLoader {
+public class ConfigLoader {
 
 	private final XPath xPath = XPathFactory.newInstance().newXPath();
 	private DocumentBuilder builder;
@@ -45,9 +45,9 @@ public class XMLLoader {
 	private final XPathExpression tagePath;
 	private final XPathExpression planVentilePath;
 	
-	private final static Logger LOGGER=Logger.getLogger(XMLLoader.class.getName());
+	private final static Logger LOGGER=Logger.getLogger(ConfigLoader.class.getName());
 
-	public XMLLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
+	public ConfigLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		zeitplaenePath = xPath.compile("/zeitplaene/zeitplan");
 		tagesPlaenePath = xPath.compile("tagesplaene");

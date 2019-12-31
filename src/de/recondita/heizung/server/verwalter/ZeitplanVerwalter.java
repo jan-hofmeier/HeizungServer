@@ -17,12 +17,12 @@ import org.xml.sax.SAXException;
 
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
-import de.recondita.heizung.xml.XMLLoader;
-import de.recondita.heizung.xml.XMLLoader.PunktOrderException;
+import de.recondita.heizung.xml.ConfigLoader;
+import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
 
 public class ZeitplanVerwalter implements Closeable {
 	private Ventilverwalter ventile;
-	private XMLLoader configurationLoader;
+	private ConfigLoader configurationLoader;
 	private ArrayList<Zeitplan> zeitPlaene;
 	private ScheduledThreadPoolExecutor timer;
 
@@ -30,7 +30,7 @@ public class ZeitplanVerwalter implements Closeable {
 			.getLogger(ZeitplanVerwalter.class.getName());
 
 	public ZeitplanVerwalter(Ventilverwalter ventilverwalter,
-			XMLLoader configurationLoader) throws FileNotFoundException,
+			ConfigLoader configurationLoader) throws FileNotFoundException,
 			XPathExpressionException, IOException, SAXException,
 			PunktOrderException {
 		this.ventile = ventilverwalter;
