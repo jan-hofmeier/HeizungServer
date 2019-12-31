@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,6 @@ public class HttpIcal {
 		con.setInstanceFollowRedirects(true);
 		int status = con.getResponseCode();
 		if (status != 200) {
-			LOGGER.severe("Non 200 status Code: " + status + " for " + url);
 			throw new IOException("Non 200 status Code: " + status);
 		}
 
@@ -59,10 +59,10 @@ public class HttpIcal {
 			calendar = requestCalendar();
 		} catch (IOException e) {
 			LOGGER.severe("Can not get Calendar from " + url);
-			e.printStackTrace();
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		} catch (ParserException e) {
 			LOGGER.severe("Can not parse Calendar from " + url);
-			e.printStackTrace();
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 		DateTime now = new DateTime(java.util.Calendar.getInstance().getTime());
