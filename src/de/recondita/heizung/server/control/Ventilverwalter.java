@@ -40,7 +40,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 
 	public synchronized void createVentil(int pin, String name, String group) throws IOException {
 		Ventil v = getVentilByName(name);
-		if (group == null)
+		if ("".equals(group) || group == null)
 			group = name;
 		
 		if (v != null) {
@@ -55,7 +55,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		v = new Ventil(pin, name, group, this);
 		gpioMap.put(pin, v);
 		nameMap.put(name, v);
-		LOGGER.info("Ventil " + name + " erstelt");
+		LOGGER.info("Ventil " + name + " in Gruppe " + group + " erstellt");
 
 		groupMap.getOrDefault(group, new ArrayList<Ventil>()).add(v);
 	}
