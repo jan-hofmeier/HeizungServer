@@ -1,6 +1,7 @@
 package de.recondita.heizung.server.GoogleSheet;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -21,31 +22,41 @@ public class SheetRoomConfig {
     private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+    private String sheetId;
+    private Sheets service;
     
-	public SheetRoomConfig() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public static void main(String[] args) throws IOException, GeneralSecurityException {
+	public SheetRoomConfig(String sheetId) throws FileNotFoundException, IOException, GeneralSecurityException {
+		this.sheetId = sheetId;
+		
 		final GoogleCredentials credential =
 		        ServiceAccountCredentials.fromStream(new FileInputStream("config/google-credentials.json"))
 		        .createScoped(SheetsScopes.SPREADSHEETS);
 		
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY,  new HttpCredentialsAdapter(credential))
+        service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY,  new HttpCredentialsAdapter(credential))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-        
-        
+	}
+
+	public List<List<Object>> getConfig() throws IOException{
         ValueRange response = service.spreadsheets().values()
-                .get("1HyVkpQfcoL511u5ev4pG0ycxLUA4YPzN0-9sRO-aYRM", "Räume")
+                .get(sheetId, "Räume")
                 .execute();
         
-        List<List<Object>> values = response.getValues();
-        
-        System.out.println(values);
+        return response.getValues();
+	}
+	
+	public static void main(String[] args) throws IOException, GeneralSecurityException, InterruptedException {
 
+        SheetRoomConfig rooms = new SheetRoomConfig("1HyVkpQfcoL511u5ev4pG0ycxLUA4YPzN0-9sRO-aYRM");    
+        
+        System.out.println(rooms.getConfig());
+        
+        Thread.sleep(600000);
+        
+        System.out.println(rooms.getConfig());
+        
 	}
 
 }
