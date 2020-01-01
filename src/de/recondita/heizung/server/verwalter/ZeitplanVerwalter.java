@@ -18,6 +18,8 @@ import javax.xml.xpath.XPathExpressionException;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.ical.HttpIcal;
+import de.recondita.heizung.server.GoogleSheet.Room;
+import de.recondita.heizung.server.GoogleSheet.SheetRoomSettings;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
 import de.recondita.heizung.xml.ConfigLoader;
@@ -29,6 +31,7 @@ public class ZeitplanVerwalter implements Closeable {
 	private ArrayList<Zeitplan> zeitPlaene;
 	private ScheduledThreadPoolExecutor timer;
 	private HttpIcal[] iCalPlaene;
+	private SheetRoomSettings roomSettings;
 
 	private final static Logger LOGGER = Logger.getLogger(ZeitplanVerwalter.class.getName());
 
@@ -40,6 +43,7 @@ public class ZeitplanVerwalter implements Closeable {
 
 		try {
 			iCalPlaene = configurationLoader.loadIcal();
+			roomSettings = this.configurationLoader.loadSheetRoomSettings();
 		} catch (Exception e) {
 			LOGGER.info("Fallback to XML schedule");
 			this.zeitPlaene = this.configurationLoader.loadZeitplaene(ventilverwalter);
@@ -69,11 +73,19 @@ public class ZeitplanVerwalter implements Closeable {
 	}
 	
 	private void checkICal() {
-		Set<String> activeGroups = new HashSet<>();
+		Set<String> activeSchedules = new HashSet<>();
 		for(HttpIcal ical: iCalPlaene) {
-			activeGroups.addAll(ical.getActiveGroups());
+			activeSchedules.addAll(ical.getActiveGroups());
 		}
-		ventile.setActiveValves(activeGroups);
+		
+		activeSchedules.add("AN");
+		
+		for(Room room :roomSettings.getConfig()) {
+			boolean active = false;
+			for(String schedule: room.getPlans())
+				active|=activeSchedules.contains(schedule);
+			ventile.getVentilByName(room.getName()).setPlanOn(active);	
+		}
 	}
 	
 	private void check(){

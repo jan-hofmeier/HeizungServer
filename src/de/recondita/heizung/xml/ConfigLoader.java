@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.ical.HttpIcal;
+import de.recondita.heizung.server.GoogleSheet.SheetRoomSettings;
 import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
@@ -180,8 +182,13 @@ public class ConfigLoader {
 	public HttpIcal[] loadIcal() throws IOException {
 		String[] urls = Files.lines(Paths.get(configdir + File.separator + "icalurls.txt")).toArray(String[]::new);
 		HttpIcal[] icals = new HttpIcal[urls.length];
-		for(int i=0; i<urls.length; i++)
+		for (int i = 0; i < urls.length; i++)
 			icals[i] = new HttpIcal(new URL(urls[i]));
 		return icals;
+	}
+
+	public SheetRoomSettings loadSheetRoomSettings() throws IOException, GeneralSecurityException {
+		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
+		return new SheetRoomSettings(id);
 	}
 }

@@ -29,7 +29,7 @@ public class Ventil {
 		return name;
 	}
 
-	void setPlanOn(boolean on) {
+	public void setPlanOn(boolean on) {
 		this.planOn = on;
 		setValue();
 	}
