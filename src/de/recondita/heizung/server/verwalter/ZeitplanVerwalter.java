@@ -45,6 +45,7 @@ public class ZeitplanVerwalter implements Closeable {
 			iCalPlaene = configurationLoader.loadIcal();
 			roomSettings = this.configurationLoader.loadSheetRoomSettings();
 		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			LOGGER.info("Fallback to XML schedule");
 			this.zeitPlaene = this.configurationLoader.loadZeitplaene(ventilverwalter);
 		}
