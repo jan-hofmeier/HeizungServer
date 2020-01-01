@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -189,6 +190,7 @@ public class ConfigLoader {
 
 	public SheetRoomSettings loadSheetRoomSettings() throws IOException, GeneralSecurityException {
 		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
-		return new SheetRoomSettings(id);
+		InputStream gc = new FileInputStream(configdir.getAbsolutePath() + File.separator +"google-credentials.json");
+		return new SheetRoomSettings(gc, id);
 	}
 }

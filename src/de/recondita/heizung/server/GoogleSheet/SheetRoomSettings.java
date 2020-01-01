@@ -1,8 +1,8 @@
 package de.recondita.heizung.server.GoogleSheet;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +27,11 @@ public class SheetRoomSettings {
 	private Sheets service;
 	private List<Room> rooms;
 
-	public SheetRoomSettings(String sheetId) throws FileNotFoundException, IOException, GeneralSecurityException {
+	public SheetRoomSettings(InputStream googleCredentials, String sheetId) throws FileNotFoundException, IOException, GeneralSecurityException {
 		this.sheetId = sheetId;
 
 		final GoogleCredentials credential = ServiceAccountCredentials
-				.fromStream(new FileInputStream("config/google-credentials.json"))
+				.fromStream(googleCredentials)
 				.createScoped(SheetsScopes.SPREADSHEETS);
 
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -74,17 +74,4 @@ public class SheetRoomSettings {
 		}
 		return rooms;
 	}
-
-	public static void main(String[] args) throws IOException, GeneralSecurityException, InterruptedException {
-
-		SheetRoomSettings rooms = new SheetRoomSettings("1HyVkpQfcoL511u5ev4pG0ycxLUA4YPzN0-9sRO-aYRM");
-
-		System.out.println(rooms.getConfig());
-
-		Thread.sleep(600000);
-
-		System.out.println(rooms.getConfig());
-
-	}
-
 }
