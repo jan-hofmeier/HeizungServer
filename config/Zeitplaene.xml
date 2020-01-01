@@ -46,7 +46,7 @@
 			</tagesplan>
 		</tagesplaene>
 		<groups>
-			<group>Wohnzimmer</group>
+			<ventil>WohnzimmerWest</ventil>
 		</groups>
 	</zeitplan>
 </zeitplaene>

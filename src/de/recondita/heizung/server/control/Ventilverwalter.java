@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -19,7 +18,6 @@ public class Ventilverwalter implements Iterable<Ventil> {
 
 	private final Map<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
 	private final Map<String, Ventil> nameMap = new HashMap<String, Ventil>();
-	private final Map<String, List<Ventil>> groupMap = new HashMap<String, List<Ventil>>();
 
 	private ArrayList<VentilStateListener> listener = new ArrayList<VentilStateListener>();
 
@@ -38,10 +36,8 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		return INSTANCE;
 	}
 
-	public synchronized void createVentil(int pin, String name, String group) throws IOException {
+	public synchronized void createVentil(int pin, String name) throws IOException {
 		Ventil v = getVentilByName(name);
-		if ("".equals(group) || group == null)
-			group = name;
 		
 		if (v != null) {
 			LOGGER.severe("Ventil already exists: " + name);
@@ -52,12 +48,10 @@ public class Ventilverwalter implements Iterable<Ventil> {
 			LOGGER.severe("GPIO already in use: " + pin);
 		} else
 			enable(pin);
-		v = new Ventil(pin, name, group, this);
+		v = new Ventil(pin, name, this);
 		gpioMap.put(pin, v);
 		nameMap.put(name, v);
-		LOGGER.info("Ventil " + name + " in Gruppe " + group + " erstellt");
-
-		groupMap.getOrDefault(group, new ArrayList<Ventil>()).add(v);
+		LOGGER.info("Ventil " + name + " erstellt");
 	}
 
 	private void enable(int pin) throws IOException {
@@ -94,10 +88,6 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		return nameMap.get(name);
 	}
 
-	public List<Ventil> getGroup(String group) {
-		return groupMap.get(group);
-	}
-
 	public synchronized void shutdown() {
 		Collection<Integer> c = gpioMap.keySet();
 		try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
@@ -131,9 +121,9 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		return gpioMap.values().iterator();
 	}
 
-	public void setActiveGroups(Set<String> activeGroups) {
+	public void setActiveValves(Set<String> activeValves) {
 		for(Ventil v: this) {
-			v.setPlanOn(activeGroups.contains(v.getGroup().toLowerCase()));
+			v.setPlanOn(activeValves.contains(v.getName().toLowerCase()));
 		}
 	}
 }

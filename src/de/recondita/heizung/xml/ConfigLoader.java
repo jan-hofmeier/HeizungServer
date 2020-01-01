@@ -47,10 +47,8 @@ public class ConfigLoader {
 	private final XPathExpression namePath;
 	private final XPathExpression ventilePath;
 	private final XPathExpression gpioPath;
-	private final XPathExpression groupPath;
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
-	private final XPathExpression planGroupPath;
 
 	private final static Logger LOGGER = Logger.getLogger(ConfigLoader.class.getName());
 
@@ -62,10 +60,8 @@ public class ConfigLoader {
 		namePath = xPath.compile("name");
 		ventilePath = xPath.compile("/ventile/ventil");
 		gpioPath = xPath.compile("gpio");
-		groupPath = xPath.compile("group");
 		schaltpunktePath = xPath.compile("schaltpunkte");
 		tagePath = xPath.compile("tage/tag");
-		planGroupPath = xPath.compile("groups/group");
 		this.configdir = configdir;
 	}
 
@@ -83,8 +79,7 @@ public class ConfigLoader {
 		NodeList ventile = (NodeList) ventilePath.evaluate(xmlDocument, XPathConstants.NODESET);
 		for (int i = 0; i < ventile.getLength(); i++) {
 			Node v = ventile.item(i);
-			ventilverwalter.createVentil(Integer.parseInt(gpioPath.evaluate(v)), namePath.evaluate(v),
-					groupPath.evaluate(v));
+			ventilverwalter.createVentil(Integer.parseInt(gpioPath.evaluate(v)), namePath.evaluate(v));
 		}
 	}
 
@@ -115,12 +110,12 @@ public class ConfigLoader {
 		String name = namePath.evaluate(zeitplanNode);
 		Node tagesplaene = (Node) tagesPlaenePath.evaluate(zeitplanNode, XPathConstants.NODE);
 		LocalTime[][] plan = evaluateTagesplan(tagesplaene);
-		NodeList groupNodes = (NodeList) planGroupPath.evaluate(zeitplanNode, XPathConstants.NODESET);
-		List<Ventil> ventile = new ArrayList<>();
-		for (int i = 0; i < groupNodes.getLength(); i++) {
-			String groupName = groupNodes.item(i).getTextContent();
-			LOGGER.info("Fuege Gruppe " + groupName + " zu Plan " + name + " hinzu");
-			ventile.addAll(ventilverwalter.getGroup(groupName));
+		NodeList ventileNodes = (NodeList) ventilePath.evaluate(zeitplanNode, XPathConstants.NODESET);
+		List<Ventil> ventile = new ArrayList<>(ventileNodes.getLength());
+		for (int i = 0; i < ventileNodes.getLength(); i++) {
+			String vname = ventileNodes.item(i).getTextContent();
+			LOGGER.info("Fuege Ventil " + vname + " zu Plan " + name + " hinzu");
+			ventile.add(ventilverwalter.getVentilByName(name));
 		}
 		Zeitplan zp = new Zeitplan(id, name, plan, ventile);
 		return zp;

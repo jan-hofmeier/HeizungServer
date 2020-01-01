@@ -73,7 +73,7 @@ public class ZeitplanVerwalter implements Closeable {
 		for(HttpIcal ical: iCalPlaene) {
 			activeGroups.addAll(ical.getActiveGroups());
 		}
-		ventile.setActiveGroups(activeGroups);
+		ventile.setActiveValves(activeGroups);
 	}
 	
 	private void check(){

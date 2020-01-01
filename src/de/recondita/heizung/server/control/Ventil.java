@@ -11,7 +11,6 @@ public class Ventil {
 	private Mode mode = Mode.AUTO;
 	private String name;
 	private int gpio;
-	private String group;
 	private Ventilverwalter ventilverwalter;
 
 	private static final Object lock = new Object();
@@ -19,11 +18,10 @@ public class Ventil {
 	private final static Logger LOGGER = Logger
 			.getLogger(Ventilverwalter.class.getName());
 
-	public Ventil(int gpio, String name, String group, Ventilverwalter ventilverwalter) {
+	public Ventil(int gpio, String name, Ventilverwalter ventilverwalter) {
 		this.gpio = gpio;
 		this.name = name;
 		this.ventilverwalter = ventilverwalter;
-		this.group = group;
 		setValue();
 	}
 
@@ -78,9 +76,5 @@ public class Ventil {
 
 	public boolean isOn() {
 		return gpioOn;
-	}
-	
-	String getGroup() {
-		return group;
 	}
 }
