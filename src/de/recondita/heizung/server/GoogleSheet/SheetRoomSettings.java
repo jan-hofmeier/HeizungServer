@@ -17,15 +17,15 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 
-public class SheetRoomConfig {
+public class SheetRoomSettings {
 
-    private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
+    private static final String APPLICATION_NAME = "Heizung";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     private String sheetId;
     private Sheets service;
     
-	public SheetRoomConfig(String sheetId) throws FileNotFoundException, IOException, GeneralSecurityException {
+	public SheetRoomSettings(String sheetId) throws FileNotFoundException, IOException, GeneralSecurityException {
 		this.sheetId = sheetId;
 		
 		final GoogleCredentials credential =
@@ -49,7 +49,7 @@ public class SheetRoomConfig {
 	
 	public static void main(String[] args) throws IOException, GeneralSecurityException, InterruptedException {
 
-        SheetRoomConfig rooms = new SheetRoomConfig("1HyVkpQfcoL511u5ev4pG0ycxLUA4YPzN0-9sRO-aYRM");    
+        SheetRoomSettings rooms = new SheetRoomSettings("1HyVkpQfcoL511u5ev4pG0ycxLUA4YPzN0-9sRO-aYRM");    
         
         System.out.println(rooms.getConfig());
         
