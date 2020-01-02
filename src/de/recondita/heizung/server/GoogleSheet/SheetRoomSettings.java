@@ -76,7 +76,7 @@ public class SheetRoomSettings {
 			} catch (Exception e) {
 				LOGGER.log(Level.INFO, e.getMessage(), e);
 			}
-			String[] schedules = row.size() == 0 ? new String[0] : row.get(3).toString().split(" ");
+			String[] schedules = row.size() == 0 ? new String[0] : row.get(3).toString().toLowerCase().split(" ");
 
 			rooms.add(new Room(name, onTemp, offTemp, schedules));
 		}
