@@ -72,25 +72,29 @@ public class ZeitplanVerwalter implements Closeable {
 			setFatalError();
 		}
 	}
-	
+
 	private void checkICal() {
 		Set<String> activeSchedules = new HashSet<>();
-		for(HttpIcal ical: iCalPlaene) {
+		for (HttpIcal ical : iCalPlaene) {
 			activeSchedules.addAll(ical.getActiveGroups());
 		}
-		
+
 		activeSchedules.add("AN");
-		
-		for(Room room :roomSettings.getConfig()) {
+
+		for (Room room : roomSettings.getConfig()) {
 			boolean active = false;
-			for(String schedule: room.getPlans())
-				active|=activeSchedules.contains(schedule);
-			ventile.getVentilByName(room.getName()).setPlanOn(active);	
+			for (String schedule : room.getPlans())
+				active |= activeSchedules.contains(schedule);
+			try {
+				ventile.getVentilByName(room.getName()).setPlanOn(active);
+			} catch (Exception e) {
+				LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			}
 		}
 	}
-	
-	private void check(){
-		if(iCalPlaene == null)
+
+	private void check() {
+		if (iCalPlaene == null)
 			checkXML();
 		else
 			checkICal();
