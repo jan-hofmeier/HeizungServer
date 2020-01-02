@@ -24,22 +24,20 @@ public class SheetRoomSettings {
 
 	private final static Logger LOGGER = Logger.getLogger(HttpIcal.class.getName());
 
-	private static final String APPLICATION_NAME = "Heizung";
-	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
 	private String sheetId;
 	private Sheets service;
 	private List<Room> rooms;
 
-	public SheetRoomSettings(GoogleCredentials credentials, String sheetId)
+	public SheetRoomSettings(GoogleCredentials credentials, String applicationName, String sheetId)
 			throws FileNotFoundException, IOException, GeneralSecurityException {
 		LOGGER.fine("Create SheetRoomSettings for " + sheetId);
 		this.sheetId = sheetId;
 
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 		credentials = credentials.createScoped(SheetsScopes.SPREADSHEETS);
+		final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 		service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credentials))
-				.setApplicationName(APPLICATION_NAME).build();
+				.setApplicationName(applicationName).build();
 	}
 
 	private static float getOrDefault(List<Object> list, int index, float defaultValue) {

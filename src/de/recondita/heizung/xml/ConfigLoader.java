@@ -56,6 +56,8 @@ public class ConfigLoader {
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
 
+	private static final String GOOGLE_APPLICATION_NAME = "Heizung"; 
+	
 	private final static Logger LOGGER = Logger.getLogger(ConfigLoader.class.getName());
 
 	private GoogleCredentials googleCredentials;
@@ -204,6 +206,6 @@ public class ConfigLoader {
 
 	public SheetRoomSettings loadSheetRoomSettings() throws IOException, GeneralSecurityException {
 		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
-		return new SheetRoomSettings(loadGoogleCredentials(), id);
+		return new SheetRoomSettings(loadGoogleCredentials(),GOOGLE_APPLICATION_NAME, id);
 	}
 }
