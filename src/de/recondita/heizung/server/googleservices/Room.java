@@ -1,4 +1,4 @@
-package de.recondita.heizung.server.GoogleSheet;
+package de.recondita.heizung.server.googleservices;
 
 public class Room {
 

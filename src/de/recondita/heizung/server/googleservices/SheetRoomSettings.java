@@ -1,4 +1,4 @@
-package de.recondita.heizung.server.GoogleSheet;
+package de.recondita.heizung.server.googleservices;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

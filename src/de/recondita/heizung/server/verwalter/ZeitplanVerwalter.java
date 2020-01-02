@@ -18,10 +18,10 @@ import javax.xml.xpath.XPathExpressionException;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.ical.HttpIcal;
-import de.recondita.heizung.server.GoogleSheet.Room;
-import de.recondita.heizung.server.GoogleSheet.SheetRoomSettings;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
+import de.recondita.heizung.server.googleservices.Room;
+import de.recondita.heizung.server.googleservices.SheetRoomSettings;
 import de.recondita.heizung.xml.ConfigLoader;
 import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
 
