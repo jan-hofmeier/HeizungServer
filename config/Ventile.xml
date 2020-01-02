@@ -17,7 +17,7 @@
 		<gpio>20</gpio>
 	</ventil>
 	<ventil>
-		<name>Kueche</name>
+		<name>Küche</name>
 		<gpio>21</gpio>
 	</ventil>
 	<ventil>
