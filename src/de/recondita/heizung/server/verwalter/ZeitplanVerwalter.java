@@ -79,8 +79,9 @@ public class ZeitplanVerwalter implements Closeable {
 			activeSchedules.addAll(ical.getActiveGroups());
 		}
 
-		activeSchedules.add("AN");
-
+		activeSchedules.add("an");
+		activeSchedules.add("on");
+		
 		for (Room room : roomSettings.getConfig()) {
 			boolean active = false;
 			for (String schedule : room.getPlans())
