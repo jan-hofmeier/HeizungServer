@@ -53,7 +53,8 @@ public class SheetRoomSettings {
 		values.remove(0);
 		rooms = new ArrayList<>(values.size());
 		for (List<Object> row : values) {
-			String name = row.get(0).toString();
+			System.out.println("Got row: " + row);
+			String name = row.get(0).toString().trim();
 			if ("".equals(name))
 				continue;
 			float onTemp = Float.MAX_VALUE;
@@ -68,7 +69,7 @@ public class SheetRoomSettings {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			String[] schedules = row.get(3).toString().split(" ");
+			String[] schedules = row.size()==0 ? new String[0]: row.get(3).toString().split(" ");
 			
 			rooms.add(new Room(name,onTemp,offTemp,schedules));
 		}
