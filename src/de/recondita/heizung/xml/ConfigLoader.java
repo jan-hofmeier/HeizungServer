@@ -33,6 +33,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+
 import de.recondita.heizung.ical.HttpIcal;
 import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
@@ -55,7 +58,10 @@ public class ConfigLoader {
 
 	private final static Logger LOGGER = Logger.getLogger(ConfigLoader.class.getName());
 
-	public ConfigLoader(File configdir) throws ParserConfigurationException, XPathExpressionException {
+	private GoogleCredentials googleCredentials;
+
+	public ConfigLoader(File configdir)
+			throws ParserConfigurationException, XPathExpressionException, FileNotFoundException {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		zeitplaenePath = xPath.compile("/zeitplaene/zeitplan");
 		tagesPlaenePath = xPath.compile("tagesplaene");
@@ -188,9 +194,16 @@ public class ConfigLoader {
 		return icals;
 	}
 
+	private GoogleCredentials loadGoogleCredentials() throws IOException {
+		if (googleCredentials == null) {
+			InputStream gc = new FileInputStream(new File(configdir + File.separator + "google-credentials.json"));
+			googleCredentials = ServiceAccountCredentials.fromStream(gc);
+		}
+		return googleCredentials;
+	}
+
 	public SheetRoomSettings loadSheetRoomSettings() throws IOException, GeneralSecurityException {
 		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
-		InputStream gc = new FileInputStream(configdir.getAbsolutePath() + File.separator +"google-credentials.json");
-		return new SheetRoomSettings(gc, id);
+		return new SheetRoomSettings(loadGoogleCredentials(), id);
 	}
 }

@@ -2,7 +2,6 @@ package de.recondita.heizung.server.googleservices;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 
 import de.recondita.heizung.ical.HttpIcal;
 
@@ -33,17 +31,14 @@ public class SheetRoomSettings {
 	private Sheets service;
 	private List<Room> rooms;
 
-	public SheetRoomSettings(InputStream googleCredentials, String sheetId)
+	public SheetRoomSettings(GoogleCredentials credentials, String sheetId)
 			throws FileNotFoundException, IOException, GeneralSecurityException {
 		LOGGER.fine("Create SheetRoomSettings for " + sheetId);
 		this.sheetId = sheetId;
 
-		final GoogleCredentials credential = ServiceAccountCredentials.fromStream(googleCredentials)
-				.createScoped(SheetsScopes.SPREADSHEETS);
-
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-
-		service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credential))
+		credentials = credentials.createScoped(SheetsScopes.SPREADSHEETS);
+		service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credentials))
 				.setApplicationName(APPLICATION_NAME).build();
 	}
 
