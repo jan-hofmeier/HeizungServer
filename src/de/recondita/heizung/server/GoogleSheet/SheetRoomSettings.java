@@ -1,9 +1,11 @@
 package de.recondita.heizung.server.GoogleSheet;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -25,7 +27,7 @@ import de.recondita.heizung.ical.HttpIcal;
 public class SheetRoomSettings {
 
 	private final static Logger LOGGER = Logger.getLogger(HttpIcal.class.getName());
-	
+
 	private static final String APPLICATION_NAME = "Heizung";
 	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
@@ -47,35 +49,39 @@ public class SheetRoomSettings {
 				.setApplicationName(APPLICATION_NAME).build();
 	}
 
+	private static float getOrDefault(List<Object> list, int index, float defaultValue) {
+		if (list.size() >= index)
+			return defaultValue;
+		String str = list.get(index).toString().trim();
+		if ("".equals(str))
+			return defaultValue;
+		try {
+			return Float.parseFloat(str);
+		} catch (NumberFormatException e) {
+			LOGGER.log(Level.INFO, e.getMessage(), e);
+			return defaultValue;
+		}
+	}
+
 	public List<Room> getConfig() {
 		ValueRange response;
 		try {
-			response = service.spreadsheets().values().get(sheetId, "Räume").execute();
+			response = service.spreadsheets().values().get(sheetId, "Räume!A1:D").execute();
 		} catch (IOException e) {
 			LOGGER.log(Level.INFO, e.getMessage(), e);
 			return rooms; // last good result
 		}
 
 		List<List<Object>> values = response.getValues();
-		values.remove(0);
 		rooms = new ArrayList<>(values.size());
 		for (List<Object> row : values) {
 			LOGGER.fine("Got row: " + row);
 			String name = row.get(0).toString().trim();
 			if ("".equals(name))
 				continue;
-			float onTemp = Float.MAX_VALUE;
-			try {
-				onTemp = Float.parseFloat(row.get(1).toString());
-			} catch (Exception e) {
-				LOGGER.log(Level.INFO, e.getMessage(), e);
-			}
-			float offTemp = Float.MIN_VALUE;
-			try {
-				offTemp = Float.parseFloat(row.get(2).toString());
-			} catch (Exception e) {
-				LOGGER.log(Level.INFO, e.getMessage(), e);
-			}
+			float onTemp = getOrDefault(row, 1, Float.MAX_VALUE);
+			float offTemp = getOrDefault(row, 1, Float.MIN_VALUE);
+
 			String[] schedules = row.size() < 4 ? new String[0] : row.get(3).toString().toLowerCase().split(" ");
 
 			rooms.add(new Room(name, onTemp, offTemp, schedules));
