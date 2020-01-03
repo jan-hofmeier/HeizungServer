@@ -9,11 +9,9 @@ import java.util.logging.Logger;
 
 import org.apache.commons.collections4.map.HashedMap;
 
-import de.recondita.heizung.server.googleservices.SheetRoomSettings;
-
 public class TempratureGetter {
 
-	private final static Logger LOGGER = Logger.getLogger(SheetRoomSettings.class.getName());
+	private final static Logger LOGGER = Logger.getLogger(TempratureGetter.class.getName());
 	private static Runtime rt = Runtime.getRuntime();
 
 	public Map<String, Float> getTempratures() {
@@ -21,9 +19,11 @@ public class TempratureGetter {
 
 		try {
 			Process pr = rt.exec("python3 printtemp.py");
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+					BufferedReader errReader = new BufferedReader(new InputStreamReader(pr.getErrorStream()))) {
 				String line;
 				while ((line = reader.readLine()) != null) {
+					LOGGER.log(Level.INFO, "getTemprature: " + line);
 					String[] parts = line.split(":");
 					if (parts.length == 2)
 						try {
@@ -31,6 +31,9 @@ public class TempratureGetter {
 						} catch (NumberFormatException e) {
 							LOGGER.log(Level.WARNING, e.getMessage(), e);
 						}
+				}
+				while ((line = reader.readLine()) != null) {
+					LOGGER.log(Level.SEVERE,line);
 				}
 			}
 		} catch (IOException e) {
