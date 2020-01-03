@@ -91,15 +91,19 @@ public class ZeitplanVerwalter implements Closeable {
 			if (ventil != null)
 				ventil.setPlanOn(active);
 			else
-				LOGGER.log(Level.SEVERE, "Can't find valve " + room.getName());
+				LOGGER.log(Level.WARNING, "Can't find valve " + room.getName());
 		}
 	}
 
 	private void check() {
+		try {
 		if (iCalPlaene == null)
 			checkXML();
 		else
 			checkICal();
+		}catch(Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 
 	private void setFatalError() {
