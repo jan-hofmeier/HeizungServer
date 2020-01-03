@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -19,6 +20,7 @@ import net.fortuna.ical4j.filter.PeriodRule;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentGroup;
+import net.fortuna.ical4j.model.DateRange;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -79,13 +81,13 @@ public class HttpIcal {
 		// Handle Recurrent Events with changed time for single instance
 		List<VEvent> removed = new ArrayList<>();
 		for (VEvent event : eventsNow) {
-			String start = event.getStartDate().getValue();
-
+			Date start = event.calculateRecurrenceSet(period).stream().findFirst().get().getStart();
 			ComponentGroup<VEvent> group = new ComponentGroup<>(calendar.getComponents(Component.VEVENT),
 					event.getUid());
 			for (VEvent revision : group.getRevisions()) {
 				RecurrenceId recurrenceid = revision.getRecurrenceId();
-				if (recurrenceid != null && start.equals(recurrenceid.getValue()) && filter.filter(new VEvent[] { revision }).length == 0) {
+				if (recurrenceid != null && start.equals(recurrenceid.getDate())
+						&& !period.intersects(new DateRange(revision.getStartDate().getDate(),revision.getEndDate().getDate()))) {
 					removed.add(event);
 					LOGGER.log(Level.INFO, "Found moved event: " + event.getName());
 				}
