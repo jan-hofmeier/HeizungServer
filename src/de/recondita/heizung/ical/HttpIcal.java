@@ -6,7 +6,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -20,7 +19,6 @@ import net.fortuna.ical4j.filter.PeriodRule;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentGroup;
-import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.component.CalendarComponent;
@@ -29,14 +27,15 @@ import net.fortuna.ical4j.util.MapTimeZoneCache;
 
 public class HttpIcal {
 
-	private final static Logger LOGGER = Logger.getLogger(HttpIcal.class.getName());
-
+	private final static Logger LOGGER = Logger
+			.getLogger(HttpIcal.class.getName());
+	
 	static {
 		System.setProperty("net.fortuna.ical4j.timezone.cache.impl", MapTimeZoneCache.class.getName());
 	}
 
 	private URL url;
-
+	
 	public Calendar calendar = new Calendar();
 
 	public HttpIcal(URL icalUrl) {
@@ -59,7 +58,7 @@ public class HttpIcal {
 	}
 
 	public List<String> getActiveGroups() {
-
+		
 		try {
 			calendar = requestCalendar();
 		} catch (IOException e) {
@@ -77,25 +76,19 @@ public class HttpIcal {
 		Filter<VEvent> filter = new Filter<>(periodRule);
 
 		Collection<VEvent> eventsNow = filter.filter(calendar.getComponents(Component.VEVENT));
-
-		// Handle Recurrent Events with changed time for single instance
+		
+		//Handle Recurrent Events with changed time for single instance
 		List<VEvent> removed = new ArrayList<>();
-		for (VEvent event : eventsNow) {
+		for(VEvent event: eventsNow) {
 			ComponentGroup<CalendarComponent> group = new ComponentGroup<>(calendar.getComponents(), event.getUid());
-			ComponentList<CalendarComponent> revisions = group.getRevisions();
-			revisions.sort(new PatchedComponentSequenceComparator());
-			Collections.reverse(revisions);
-			System.out.println(group.getRevisions());
-
-			if (revisions.iterator().next().calculateRecurrenceSet(period).isEmpty()) {
+			if(group.calculateRecurrenceSet(period).isEmpty()) {
 				removed.add(event);
 				LOGGER.log(Level.INFO, "Found moved event: " + event.getName());
 			}
 		}
 		eventsNow.removeAll(removed);
-
-		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase())
-				.collect(Collectors.toList());
+		
+		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase()).collect(Collectors.toList());
 
 	}
 
