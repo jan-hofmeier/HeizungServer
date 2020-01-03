@@ -18,11 +18,9 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 
-import de.recondita.heizung.ical.HttpIcal;
-
 public class SheetRoomSettings {
 
-	private final static Logger LOGGER = Logger.getLogger(HttpIcal.class.getName());
+	private final static Logger LOGGER = Logger.getLogger(SheetRoomSettings.class.getName());
 
 	private String sheetId;
 	private Sheets service;
