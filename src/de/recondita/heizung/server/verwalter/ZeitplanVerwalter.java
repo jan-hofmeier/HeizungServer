@@ -87,7 +87,7 @@ public class ZeitplanVerwalter implements Closeable {
 		activeSchedules.add("on");
 
 		Map<String, Float> tempratures = thermometers.getTempratures();
-
+		
 		for (Room room : roomSettings.getConfig()) {
 			boolean active = false;
 			for (String schedule : room.getPlans())

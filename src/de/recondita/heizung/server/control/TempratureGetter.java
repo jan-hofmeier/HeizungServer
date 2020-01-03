@@ -18,7 +18,7 @@ public class TempratureGetter {
 		Map<String, Float> temps = new HashedMap<>();
 
 		try {
-			Process pr = rt.exec("python3 printtemp.py");
+			Process pr = rt.exec("python3 /home/heizung/printtemp.py");
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 					BufferedReader errReader = new BufferedReader(new InputStreamReader(pr.getErrorStream()))) {
 				String line;
@@ -27,12 +27,12 @@ public class TempratureGetter {
 					String[] parts = line.split(":");
 					if (parts.length == 2)
 						try {
-							temps.put(parts[0].toLowerCase(), new Float(parts[1].trim()));
+							temps.put(parts[0], new Float(parts[1].trim()));
 						} catch (NumberFormatException e) {
 							LOGGER.log(Level.WARNING, e.getMessage(), e);
 						}
 				}
-				while ((line = reader.readLine()) != null) {
+				while ((line = errReader.readLine()) != null) {
 					LOGGER.log(Level.SEVERE,line);
 				}
 			}
