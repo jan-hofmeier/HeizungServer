@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -17,9 +18,11 @@ import net.fortuna.ical4j.filter.Filter;
 import net.fortuna.ical4j.filter.PeriodRule;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.ComponentGroup;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.component.CalendarComponent;
+import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.util.MapTimeZoneCache;
 
 public class HttpIcal {
@@ -68,10 +71,22 @@ public class HttpIcal {
 
 		DateTime now = new DateTime(java.util.Calendar.getInstance().getTime());
 
-		Predicate<CalendarComponent> periodRule = new PeriodRule<>(new Period(now, now));
-		Filter<CalendarComponent> filter = new Filter<>(periodRule);
+		Period period = new Period(now, now);
+		Predicate<VEvent> periodRule = new PeriodRule<>(period);
+		Filter<VEvent> filter = new Filter<>(periodRule);
 
-		Collection<CalendarComponent> eventsNow = filter.filter(calendar.getComponents(Component.VEVENT));
+		Collection<VEvent> eventsNow = filter.filter(calendar.getComponents(Component.VEVENT));
+		
+		//Handle Recurrent Events with changed time for single instance
+		List<VEvent> removed = new ArrayList<>();
+		for(VEvent event: eventsNow) {
+			ComponentGroup<CalendarComponent> group = new ComponentGroup<>(calendar.getComponents(), event.getUid());
+			if(group.calculateRecurrenceSet(period).isEmpty()) {
+				removed.add(event);
+				LOGGER.log(Level.INFO, "Found moved event: " + event.getName());
+			}
+		}
+		eventsNow.removeAll(removed);
 		
 		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase()).collect(Collectors.toList());
 
