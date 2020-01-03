@@ -27,7 +27,7 @@ public class TempratureGetter {
 					String[] parts = line.split(":");
 					if (parts.length == 2)
 						try {
-							temps.put(parts[0], new Float(parts[1].trim()));
+							temps.put(parts[0].toLowerCase(), new Float(parts[1].trim()));
 						} catch (NumberFormatException e) {
 							LOGGER.log(Level.WARNING, e.getMessage(), e);
 						}

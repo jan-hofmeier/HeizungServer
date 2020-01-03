@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +19,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.ical.HttpIcal;
+import de.recondita.heizung.server.control.TempratureGetter;
 import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
@@ -33,6 +35,7 @@ public class ZeitplanVerwalter implements Closeable {
 	private ScheduledThreadPoolExecutor timer;
 	private HttpIcal[] iCalPlaene;
 	private SheetRoomSettings roomSettings;
+	private TempratureGetter thermometers = new TempratureGetter();
 
 	private final static Logger LOGGER = Logger.getLogger(ZeitplanVerwalter.class.getName());
 
@@ -83,25 +86,33 @@ public class ZeitplanVerwalter implements Closeable {
 		activeSchedules.add("an");
 		activeSchedules.add("on");
 
+		Map<String, Float> tempratures = thermometers.getTempratures();
+
 		for (Room room : roomSettings.getConfig()) {
 			boolean active = false;
 			for (String schedule : room.getPlans())
 				active |= activeSchedules.contains(schedule);
 			Ventil ventil = ventile.getVentilByName(room.getName());
-			if (ventil != null)
-				ventil.setPlanOn(active);
-			else
+			if (ventil != null) {
+				Float currentTemp = tempratures.get(room.getName());
+				if (currentTemp == null || currentTemp.isNaN())
+					ventil.setPlanOn(active);
+				else {
+					float targetTemp = active ? room.getOntemp() : room.getOfftemp();
+					ventil.setPlanOn(targetTemp > currentTemp);
+				}
+			} else
 				LOGGER.log(Level.WARNING, "Can't find valve " + room.getName());
 		}
 	}
 
 	private void check() {
 		try {
-		if (iCalPlaene == null)
-			checkXML();
-		else
-			checkICal();
-		}catch(Exception e) {
+			if (iCalPlaene == null)
+				checkXML();
+			else
+				checkICal();
+		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
