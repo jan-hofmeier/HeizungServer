@@ -21,21 +21,20 @@ import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentGroup;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
-import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.util.MapTimeZoneCache;
 
 public class HttpIcal {
 
-	private final static Logger LOGGER = Logger
-			.getLogger(HttpIcal.class.getName());
-	
+	private final static Logger LOGGER = Logger.getLogger(HttpIcal.class.getName());
+
 	static {
 		System.setProperty("net.fortuna.ical4j.timezone.cache.impl", MapTimeZoneCache.class.getName());
 	}
 
 	private URL url;
-	
+
 	public Calendar calendar = new Calendar();
 
 	public HttpIcal(URL icalUrl) {
@@ -58,7 +57,7 @@ public class HttpIcal {
 	}
 
 	public List<String> getActiveGroups() {
-		
+
 		try {
 			calendar = requestCalendar();
 		} catch (IOException e) {
@@ -76,19 +75,26 @@ public class HttpIcal {
 		Filter<VEvent> filter = new Filter<>(periodRule);
 
 		Collection<VEvent> eventsNow = filter.filter(calendar.getComponents(Component.VEVENT));
-		
-		//Handle Recurrent Events with changed time for single instance
+
+		// Handle Recurrent Events with changed time for single instance
 		List<VEvent> removed = new ArrayList<>();
-		for(VEvent event: eventsNow) {
-			ComponentGroup<CalendarComponent> group = new ComponentGroup<>(calendar.getComponents(), event.getUid());
-			if(group.calculateRecurrenceSet(period).isEmpty()) {
-				removed.add(event);
-				LOGGER.log(Level.INFO, "Found moved event: " + event.getName());
+		for (VEvent event : eventsNow) {
+			String start = event.getStartDate().getValue();
+
+			ComponentGroup<VEvent> group = new ComponentGroup<>(calendar.getComponents(Component.VEVENT),
+					event.getUid());
+			for (VEvent revision : group.getRevisions()) {
+				RecurrenceId recurrenceid = revision.getRecurrenceId();
+				if (recurrenceid != null && start.equals(recurrenceid.getValue()) && filter.filter(new VEvent[] { revision }).length == 0) {
+					removed.add(event);
+					LOGGER.log(Level.INFO, "Found moved event: " + event.getName());
+				}
 			}
 		}
 		eventsNow.removeAll(removed);
-		
-		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase()).collect(Collectors.toList());
+
+		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase())
+				.collect(Collectors.toList());
 
 	}
 
