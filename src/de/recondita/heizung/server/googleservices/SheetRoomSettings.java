@@ -57,7 +57,7 @@ public class SheetRoomSettings {
 	public List<Room> getConfig() {
 		ValueRange response;
 		try {
-			response = service.spreadsheets().values().get(sheetId, "Räume!A1:D").execute();
+			response = service.spreadsheets().values().get(sheetId, "Räume!A2:D").execute();
 		} catch (IOException e) {
 			LOGGER.log(Level.INFO, e.getMessage(), e);
 			return rooms; // last good result
