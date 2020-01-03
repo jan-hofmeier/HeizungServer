@@ -89,7 +89,7 @@ public class HttpIcal {
 				if (recurrenceid != null && start.equals(recurrenceid.getDate())
 						&& !period.intersects(new DateRange(revision.getStartDate().getDate(),revision.getEndDate().getDate()))) {
 					removed.add(event);
-					LOGGER.log(Level.INFO, "Found moved event: " + event.getName());
+					LOGGER.log(Level.FINE, "Found moved event: " + event.getName());
 				}
 			}
 		}
