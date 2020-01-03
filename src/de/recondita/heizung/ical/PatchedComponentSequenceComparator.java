@@ -3,6 +3,10 @@ package de.recondita.heizung.ical;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentSequenceComparator;
 
+
+/**
+ * Google Calender doesn't increase the sequence number, if only the end date was changed.
+ */
 public class PatchedComponentSequenceComparator extends ComponentSequenceComparator {
 
 	@Override
