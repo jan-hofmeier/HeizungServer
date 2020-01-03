@@ -39,7 +39,7 @@ public class SheetRoomSettings {
 	}
 
 	private static float getOrDefault(List<Object> list, int index, float defaultValue) {
-		if (list.size() >= index)
+		if (list.size() <= index)
 			return defaultValue;
 		String str = list.get(index).toString().trim();
 		if ("".equals(str))
@@ -69,7 +69,7 @@ public class SheetRoomSettings {
 			if ("".equals(name))
 				continue;
 			float onTemp = getOrDefault(row, 1, Float.MAX_VALUE);
-			float offTemp = getOrDefault(row, 1, Float.MIN_VALUE);
+			float offTemp = getOrDefault(row, 2, Float.MIN_VALUE);
 
 			String[] schedules = row.size() < 4 ? new String[0] : row.get(3).toString().toLowerCase().split(" ");
 
