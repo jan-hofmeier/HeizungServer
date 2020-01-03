@@ -99,7 +99,7 @@ public class ZeitplanVerwalter implements Closeable {
 					ventil.setPlanOn(active);
 				else {
 					float targetTemp = active ? room.getOntemp() : room.getOfftemp();
-					LOGGER.log(Level.INFO, room.getName() + ": Target Temp: " + targetTemp + "Current Temp: " + currentTemp);
+					LOGGER.log(Level.INFO, room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
 					ventil.setPlanOn(targetTemp > currentTemp);
 				}
 			} else
