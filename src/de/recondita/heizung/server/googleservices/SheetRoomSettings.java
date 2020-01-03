@@ -47,7 +47,7 @@ public class SheetRoomSettings {
 		if ("".equals(str))
 			return defaultValue;
 		try {
-			return Float.parseFloat(str);
+			return Float.parseFloat(str.replace(',', '.'));
 		} catch (NumberFormatException e) {
 			LOGGER.log(Level.INFO, e.getMessage(), e);
 			return defaultValue;
