@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.ical.HttpIcal;
+import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
 import de.recondita.heizung.server.googleservices.Room;
@@ -81,16 +82,16 @@ public class ZeitplanVerwalter implements Closeable {
 
 		activeSchedules.add("an");
 		activeSchedules.add("on");
-		
+
 		for (Room room : roomSettings.getConfig()) {
 			boolean active = false;
 			for (String schedule : room.getPlans())
 				active |= activeSchedules.contains(schedule);
-			try {
-				ventile.getVentilByName(room.getName()).setPlanOn(active);
-			} catch (Exception e) {
-				LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			}
+			Ventil ventil = ventile.getVentilByName(room.getName());
+			if (ventil != null)
+				ventil.setPlanOn(active);
+			else
+				LOGGER.log(Level.SEVERE, "Can't find valve " + room.getName());
 		}
 	}
 
