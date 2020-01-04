@@ -25,6 +25,7 @@ import de.recondita.heizung.server.control.TempratureGetter;
 import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
+import de.recondita.heizung.server.googleservices.Activation;
 import de.recondita.heizung.server.googleservices.Room;
 import de.recondita.heizung.server.googleservices.SheetRoomSettings;
 import de.recondita.heizung.xml.ConfigLoader;
@@ -92,16 +93,23 @@ public class ZeitplanVerwalter implements Closeable {
 		Map<String, Float> tempratures = thermometers.getTempratures();
 		
 		for (Room room : roomSettings.getRoomSettings()) {
-			boolean active = false;
-			for (String schedule : room.getPlans())
-				active |= activeSchedules.contains(schedule);
+			
+			Activation activeActivation=null;
+			for (Activation activation : room.getActivations()) {
+				if(activeSchedules.contains(activation.getName())) {
+					activeActivation=activation;
+					break;
+				}
+			}
+			boolean active = activeActivation!=null;
+			
 			Ventil ventil = ventile.getVentilByName(room.getName());
 			if (ventil != null) {
 				Float currentTemp = tempratures.get(room.getName());
 				if (currentTemp == null || currentTemp.isNaN())
 					ventil.setPlanOn(active);
 				else {
-					float targetTemp = active ? room.getOntemp() : room.getOfftemp();
+					float targetTemp = active ? activeActivation.getTemp() : room.getOfftemp();
 					LOGGER.log(Level.INFO, room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
 					ventil.setPlanOn(targetTemp > currentTemp);
 				}

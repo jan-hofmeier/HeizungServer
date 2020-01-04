@@ -71,17 +71,17 @@ public class SheetRoomSettings {
 		Path tmpFile = backupPath.resolveSibling("~" + backupPath.getFileName());
 		try (CSVWriter writer = new CSVWriter(new FileWriter(tmpFile.toFile()))) {
 			for (List<Object> line : values) {
-				 String[] buffer = line.toArray(new String[line.size()]);
+				String[] buffer = line.toArray(new String[line.size()]);
 				writer.writeNext(buffer);
 			}
 		}
 		Files.move(tmpFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
 	}
-	
-	
-	public List<List<Object>> loadFromBackupFile() throws FileNotFoundException, IOException, CsvException{
-		try(CSVReader reader = new CSVReader(new FileReader(backupFile))){
-			return reader.readAll().stream().map(l -> new ArrayList<Object>(Arrays.asList(l))).collect(Collectors.toList());
+
+	public List<List<Object>> loadFromBackupFile() throws FileNotFoundException, IOException, CsvException {
+		try (CSVReader reader = new CSVReader(new FileReader(backupFile))) {
+			return reader.readAll().stream().map(l -> new ArrayList<Object>(Arrays.asList(l)))
+					.collect(Collectors.toList());
 		}
 	}
 
@@ -94,7 +94,7 @@ public class SheetRoomSettings {
 			LOGGER.log(Level.INFO, e.getMessage(), e);
 			if (lastValues != null)
 				return rooms; // last good result
-			if(backupFile==null)
+			if (backupFile == null)
 				throw e;
 			values = loadFromBackupFile();
 		}
@@ -114,8 +114,21 @@ public class SheetRoomSettings {
 			float offTemp = getOrDefault(row, 2, Float.MIN_VALUE);
 
 			String[] schedules = row.size() < 4 ? new String[0] : row.get(3).toString().toLowerCase().split(" ");
+			Activation[] activations = new Activation[schedules.length];
 
-			rooms.add(new Room(name, onTemp, offTemp, schedules));
+			for (int i = 0; i < schedules.length; i++) {
+				String[] parts = schedules[i].split("=");
+				float temp = onTemp;
+				if (parts.length > 1)
+					try {
+						temp = Float.parseFloat(parts[1]);
+					} catch (NumberFormatException e) {
+						LOGGER.log(Level.WARNING, e.getMessage(), e);
+					}
+				activations[i] = new Activation(parts[0], temp);
+			}
+
+			rooms.add(new Room(name, offTemp, activations));
 		}
 
 		if (backupFile != null) {
