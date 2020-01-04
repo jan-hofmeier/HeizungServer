@@ -18,6 +18,8 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.xml.sax.SAXException;
 
+import com.opencsv.exceptions.CsvException;
+
 import de.recondita.heizung.ical.HttpIcal;
 import de.recondita.heizung.server.control.TempratureGetter;
 import de.recondita.heizung.server.control.Ventil;
@@ -78,7 +80,7 @@ public class ZeitplanVerwalter implements Closeable {
 		}
 	}
 
-	private void checkICal() throws IOException, ParserException {
+	private void checkICal() throws IOException, ParserException, CsvException {
 		Set<String> activeSchedules = new HashSet<>();
 		for (HttpIcal ical : iCalPlaene) {
 			activeSchedules.addAll(ical.getActiveGroups());

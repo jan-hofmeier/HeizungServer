@@ -206,6 +206,6 @@ public class ConfigLoader {
 
 	public SheetRoomSettings loadSheetRoomSettings() throws IOException, GeneralSecurityException {
 		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
-		return new SheetRoomSettings(loadGoogleCredentials(),GOOGLE_APPLICATION_NAME, id);
+		return new SheetRoomSettings(loadGoogleCredentials(),GOOGLE_APPLICATION_NAME, id, new File(configdir + File.separator + "roomsettings.csv") );
 	}
 }
