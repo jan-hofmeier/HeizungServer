@@ -27,6 +27,7 @@ import de.recondita.heizung.server.googleservices.Room;
 import de.recondita.heizung.server.googleservices.SheetRoomSettings;
 import de.recondita.heizung.xml.ConfigLoader;
 import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
+import net.fortuna.ical4j.data.ParserException;
 
 public class ZeitplanVerwalter implements Closeable {
 	private Ventilverwalter ventile;
@@ -77,7 +78,7 @@ public class ZeitplanVerwalter implements Closeable {
 		}
 	}
 
-	private void checkICal() {
+	private void checkICal() throws IOException, ParserException {
 		Set<String> activeSchedules = new HashSet<>();
 		for (HttpIcal ical : iCalPlaene) {
 			activeSchedules.addAll(ical.getActiveGroups());

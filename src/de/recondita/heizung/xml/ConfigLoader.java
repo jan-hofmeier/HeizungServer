@@ -192,7 +192,7 @@ public class ConfigLoader {
 		String[] urls = Files.lines(Paths.get(configdir + File.separator + "icalurls.txt")).toArray(String[]::new);
 		HttpIcal[] icals = new HttpIcal[urls.length];
 		for (int i = 0; i < urls.length; i++)
-			icals[i] = new HttpIcal(new URL(urls[i]));
+			icals[i] = new HttpIcal(new URL(urls[i]), new File(configdir + File.separator + "schedule.ical"));
 		return icals;
 	}
 
