@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +58,13 @@ public class HttpIcal {
 
 	private File backupFile;
 
+	private String room;
+
+	public HttpIcal(URL icalUrl, File backupFile, String room) {
+		this(icalUrl, backupFile);
+		this.room = room.toLowerCase();
+	}
+
 	public HttpIcal(URL icalUrl, File backupFile) {
 		this.url = icalUrl;
 		this.backupFile = backupFile;
@@ -87,14 +95,15 @@ public class HttpIcal {
 
 	private void saveToBackupFile() throws IOException {
 		Path backupPath = backupFile.toPath();
-		//(backupFile.getAbsolutePath());
+		// (backupFile.getAbsolutePath());
 		Path tmpFile = backupPath.resolveSibling("~" + backupPath.getFileName());
-		try(BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmpFile.toFile()),DEFAULT_CHARSET))){
+		try (BufferedWriter bw = new BufferedWriter(
+				new OutputStreamWriter(new FileOutputStream(tmpFile.toFile()), DEFAULT_CHARSET))) {
 			bw.write(lastCalendarStr);
 		}
-		Files.move(tmpFile, backupPath,StandardCopyOption.REPLACE_EXISTING);
+		Files.move(tmpFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
 	}
-	
+
 	private Calendar getCalendar() throws IOException, ParserException {
 		String calendarStr;
 		try {
@@ -112,20 +121,19 @@ public class HttpIcal {
 						LOGGER.log(Level.WARNING, e1.getMessage(), e1);
 						throw e1;
 					}
-				}
-				else
+				} else
 					throw e;
-			}else{
+			} else {
 				return calendar;
 			}
 		}
-		
-		//no need to reparse if it didn't change
-		if(calendarStr.equals(lastCalendarStr))
+
+		// no need to reparse if it didn't change
+		if (calendarStr.equals(lastCalendarStr))
 			return calendar;
-		
+
 		lastCalendarStr = calendarStr;
-		
+
 		try (Reader reader = new StringReader(calendarStr)) {
 			calendar = new CalendarBuilder().build(reader);
 			saveToBackupFile();
@@ -135,10 +143,10 @@ public class HttpIcal {
 		} catch (ParserException e) {
 			LOGGER.severe("Can not parse Calendar from " + url);
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			if(calendar == null)
+			if (calendar == null)
 				throw e;
 		}
-		
+
 		return calendar;
 	}
 
@@ -171,9 +179,14 @@ public class HttpIcal {
 		}
 		eventsNow.removeAll(removed);
 
+		if(room != null && !eventsNow.isEmpty()) {
+			return Arrays.asList(room);
+		}
+			
+			
 		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase())
 				.collect(Collectors.toList());
+	
 
 	}
-
 }

@@ -56,8 +56,8 @@ public class ConfigLoader {
 	private final XPathExpression schaltpunktePath;
 	private final XPathExpression tagePath;
 
-	private static final String GOOGLE_APPLICATION_NAME = "Heizung"; 
-	
+	private static final String GOOGLE_APPLICATION_NAME = "Heizung";
+
 	private final static Logger LOGGER = Logger.getLogger(ConfigLoader.class.getName());
 
 	private GoogleCredentials googleCredentials;
@@ -191,8 +191,14 @@ public class ConfigLoader {
 	public HttpIcal[] loadIcal() throws IOException {
 		String[] urls = Files.lines(Paths.get(configdir + File.separator + "icalurls.txt")).toArray(String[]::new);
 		HttpIcal[] icals = new HttpIcal[urls.length];
-		for (int i = 0; i < urls.length; i++)
-			icals[i] = new HttpIcal(new URL(urls[i]), new File(configdir + File.separator + "schedule.ical"));
+		for (int i = 0; i < urls.length; i++) {
+			String[] parts = urls[i].split(" ");
+			File backupFile = new File(configdir + File.separator + "schedule" + i + ".ical");
+			if (parts.length > 1)
+				icals[i] = new HttpIcal(new URL(parts[0]), backupFile, parts[1]);
+			else
+				icals[i] = new HttpIcal(new URL(parts[0]), backupFile);
+		}
 		return icals;
 	}
 
@@ -206,6 +212,7 @@ public class ConfigLoader {
 
 	public SheetRoomSettings loadSheetRoomSettings() throws IOException, GeneralSecurityException {
 		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
-		return new SheetRoomSettings(loadGoogleCredentials(),GOOGLE_APPLICATION_NAME, id, new File(configdir + File.separator + "roomsettings.csv") );
+		return new SheetRoomSettings(loadGoogleCredentials(), GOOGLE_APPLICATION_NAME, id,
+				new File(configdir + File.separator + "roomsettings.csv"));
 	}
 }
