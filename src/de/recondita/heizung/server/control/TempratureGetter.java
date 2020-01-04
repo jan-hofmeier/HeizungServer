@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +21,15 @@ public class TempratureGetter {
 
 		try {
 			Process pr = rt.exec("python3 /home/heizung/printtemp.py");
+			Timer killer = new Timer();
+			killer.schedule(new TimerTask() {
+				
+				@Override
+				public void run() {
+					LOGGER.log(Level.SEVERE,"Timeout: kill python subprocess");
+					pr.destroyForcibly();
+				}
+			}, 30000);
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 					BufferedReader errReader = new BufferedReader(new InputStreamReader(pr.getErrorStream()))) {
 				String line;
@@ -36,6 +47,7 @@ public class TempratureGetter {
 					LOGGER.log(Level.SEVERE,line);
 				}
 			}
+			killer.cancel();
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			e.printStackTrace();
