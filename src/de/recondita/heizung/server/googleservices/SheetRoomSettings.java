@@ -52,7 +52,7 @@ public class SheetRoomSettings {
 		}
 	}
 
-	public List<Room> getConfig() {
+	public List<Room> getRoomSettings() {
 		ValueRange response;
 		try {
 			response = service.spreadsheets().values().get(sheetId, "Räume!A2:D").execute();

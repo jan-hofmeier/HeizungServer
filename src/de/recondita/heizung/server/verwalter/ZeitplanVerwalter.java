@@ -89,7 +89,7 @@ public class ZeitplanVerwalter implements Closeable {
 
 		Map<String, Float> tempratures = thermometers.getTempratures();
 		
-		for (Room room : roomSettings.getConfig()) {
+		for (Room room : roomSettings.getRoomSettings()) {
 			boolean active = false;
 			for (String schedule : room.getPlans())
 				active |= activeSchedules.contains(schedule);
