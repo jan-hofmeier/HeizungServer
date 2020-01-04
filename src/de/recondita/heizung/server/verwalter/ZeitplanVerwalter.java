@@ -94,14 +94,16 @@ public class ZeitplanVerwalter implements Closeable {
 		
 		for (Room room : roomSettings.getRoomSettings()) {
 			
-			Activation activeActivation=null;
+			float activeTemp = room.getOntemp();
+			boolean active = activeSchedules.contains(room.getName().toLowerCase());
+			
 			for (Activation activation : room.getActivations()) {
 				if(activeSchedules.contains(activation.getName())) {
-					activeActivation=activation;
+					activeTemp=activation.getTemp();
+					active = true;
 					break;
 				}
 			}
-			boolean active = activeActivation!=null;
 			
 			Ventil ventil = ventile.getVentilByName(room.getName());
 			if (ventil != null) {
@@ -109,7 +111,7 @@ public class ZeitplanVerwalter implements Closeable {
 				if (currentTemp == null || currentTemp.isNaN())
 					ventil.setPlanOn(active);
 				else {
-					float targetTemp = active ? activeActivation.getTemp() : room.getOfftemp();
+					float targetTemp = active ? activeTemp : room.getOfftemp();
 					LOGGER.log(Level.INFO, room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
 					ventil.setPlanOn(targetTemp > currentTemp);
 				}

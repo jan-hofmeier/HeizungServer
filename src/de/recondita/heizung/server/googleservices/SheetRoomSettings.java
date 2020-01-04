@@ -128,7 +128,7 @@ public class SheetRoomSettings {
 				activations[i] = new Activation(parts[0], temp);
 			}
 
-			rooms.add(new Room(name, offTemp, activations));
+			rooms.add(new Room(name, onTemp, offTemp, activations));
 		}
 
 		if (backupFile != null) {

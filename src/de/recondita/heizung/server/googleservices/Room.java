@@ -2,19 +2,25 @@ package de.recondita.heizung.server.googleservices;
 
 public class Room {
 
-	String name;
-	float offtemp;
-	Activation activations[];
+	private String name;
+	private float offtemp;
+	private float ontemp;
+	private Activation activations[];
 	
-	Room(String name, float offtemp, Activation[] activations) {
+	Room(String name, float ontemp, float offtemp, Activation[] activations) {
 		super();
 		this.name = name;
+		this.ontemp = ontemp;
 		this.offtemp = offtemp;
 		this.activations = activations;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public float getOntemp() {
+		return ontemp;
 	}
 
 	public float getOfftemp() {
