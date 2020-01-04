@@ -121,7 +121,7 @@ public class HttpIcal {
 		}
 		
 		//no need to reparse if it didn't change
-		if(lastCalendarStr.equals(calendarStr))
+		if(calendarStr.equals(lastCalendarStr))
 			return calendar;
 		
 		lastCalendarStr = calendarStr;
