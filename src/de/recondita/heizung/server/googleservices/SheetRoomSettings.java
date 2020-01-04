@@ -70,9 +70,8 @@ public class SheetRoomSettings {
 		// (backupFile.getAbsolutePath());
 		Path tmpFile = backupPath.resolveSibling("~" + backupPath.getFileName());
 		try (CSVWriter writer = new CSVWriter(new FileWriter(tmpFile.toFile()))) {
-			String[] buffer = new String[4];
 			for (List<Object> line : values) {
-				buffer = line.toArray(buffer);
+				 String[] buffer = line.toArray(new String[line.size()]);
 				writer.writeNext(buffer);
 			}
 		}
