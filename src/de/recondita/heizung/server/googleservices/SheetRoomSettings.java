@@ -49,6 +49,17 @@ public class SheetRoomSettings {
 		final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 		service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credentials))
 				.setApplicationName(applicationName).build();
+		if (backupFile != null && backupFile.exists()) {
+			try {
+				loadFromBackupFile();
+				LOGGER.info("Loaded Backup file " + backupFile.getName());
+			} catch (IOException | CsvException e) {
+				LOGGER.log(Level.WARNING, "Can't load backup file");
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
+			}
+		} else {
+			LOGGER.info("No Backup file " + backupFile.getName());
+		}
 	}
 
 	private static float getOrDefault(List<Object> list, int index, float defaultValue) {
@@ -78,32 +89,7 @@ public class SheetRoomSettings {
 		Files.move(tmpFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
 	}
 
-	public List<List<Object>> loadFromBackupFile() throws FileNotFoundException, IOException, CsvException {
-		try (CSVReader reader = new CSVReader(new FileReader(backupFile))) {
-			return reader.readAll().stream().map(l -> new ArrayList<Object>(Arrays.asList(l)))
-					.collect(Collectors.toList());
-		}
-	}
-
-	public List<Room> getRoomSettings() throws IOException, CsvException {
-		List<List<Object>> values;
-		try {
-			ValueRange response = service.spreadsheets().values().get(sheetId, "Räume!A2:D").execute();
-			values = response.getValues();
-		} catch (IOException e) {
-			LOGGER.log(Level.INFO, e.getMessage(), e);
-			if (lastValues != null)
-				return rooms; // last good result
-			if (backupFile == null)
-				throw e;
-			values = loadFromBackupFile();
-		}
-
-		if (values.equals(lastValues))
-			return rooms;
-
-		lastValues = values;
-
+	private void setRooms(List<List<Object>> values) {
 		rooms = new ArrayList<>(values.size());
 		for (List<Object> row : values) {
 			LOGGER.fine("Got row: " + row);
@@ -130,6 +116,35 @@ public class SheetRoomSettings {
 
 			rooms.add(new Room(name, onTemp, offTemp, activations));
 		}
+	}
+
+	public void loadFromBackupFile() throws FileNotFoundException, IOException, CsvException {
+		try (CSVReader reader = new CSVReader(new FileReader(backupFile))) {
+			List<List<Object>> values = reader.readAll().stream().map(l -> new ArrayList<Object>(Arrays.asList(l)))
+					.collect(Collectors.toList());
+			setRooms(values);
+		}
+	}
+
+	public List<Room> getRoomSettings() throws IOException, CsvException {
+		List<List<Object>> values;
+		try {
+			ValueRange response = service.spreadsheets().values().get(sheetId, "Räume!A2:D").execute();
+			values = response.getValues();
+		} catch (IOException e) {
+			LOGGER.log(Level.INFO, e.getMessage(), e);
+			if (lastValues != null)
+				return rooms; // last good result
+			throw e;
+		}
+
+		if (values.equals(lastValues))
+			return rooms;
+		
+
+		lastValues = values;
+
+		setRooms(values);
 
 		if (backupFile != null) {
 			try {
