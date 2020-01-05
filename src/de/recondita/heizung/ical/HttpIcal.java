@@ -142,7 +142,8 @@ public class HttpIcal {
 			throw e;
 		}
 
-		//Google setzt DTSTAMP for all Events to the time of the request. This would cause the strings to mismatch
+		// Google setzt DTSTAMP for all Events to the time of the request. This would
+		// cause the strings to mismatch
 		calendarStr = calendarStr.replaceAll("DTSTAMP:[\\d]{8}T[\\d]{6}Z\n", "");
 
 		// no need to reparse if it didn't change
@@ -153,8 +154,9 @@ public class HttpIcal {
 
 		try {
 			setCalendar(calendarStr);
-			//save the new version of the calendar only if it changed and is parseable.
-			saveToBackupFile(calendarStr);
+			// save the new version of the calendar only if it changed and is parseable.
+			if (backupFile != null)
+				saveToBackupFile(calendarStr);
 		} catch (IOException e) {
 			LOGGER.severe("Can not save new Calendar to " + backupFile.getAbsolutePath());
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
