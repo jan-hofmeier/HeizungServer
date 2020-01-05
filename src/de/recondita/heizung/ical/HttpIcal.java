@@ -69,6 +69,31 @@ public class HttpIcal {
 		this.url = icalUrl;
 		this.backupFile = backupFile;
 		LOGGER.fine("Create HTTP iCal for " + url);
+		if (backupFile != null && backupFile.exists()) {
+			try {
+				loadFromBackupFile();
+				LOGGER.info("Loaded Backup file " + backupFile.getName());
+			} catch (IOException | ParserException e) {
+				LOGGER.log(Level.WARNING, "Can't load backup file");
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
+			}
+		} else {
+			LOGGER.info("No Backup file " + backupFile.getName());
+		}
+	}
+
+	private void setCalendar(String calendarStr) throws ParserException {
+		try (Reader reader = new StringReader(calendarStr)) {
+			calendar = new CalendarBuilder().build(reader);
+			lastCalendarStr = calendarStr;
+		} catch (IOException e) {
+			// that wont happen
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
+		}
+	}
+
+	private void loadFromBackupFile() throws FileNotFoundException, IOException, ParserException {
+		setCalendar(readCalendarStrFromFile());
 	}
 
 	private static String convert(InputStream inputStream) throws IOException {
@@ -93,7 +118,8 @@ public class HttpIcal {
 		return convert(new FileInputStream(backupFile));
 	}
 
-	private void saveToBackupFile() throws IOException {
+	private void saveToBackupFile(String calendarStr) throws IOException {
+		LOGGER.info("Write new version of calendar to backup file " + backupFile.getName());
 		Path backupPath = backupFile.toPath();
 		// (backupFile.getAbsolutePath());
 		Path tmpFile = backupPath.resolveSibling("~" + backupPath.getFileName());
@@ -111,34 +137,24 @@ public class HttpIcal {
 		} catch (IOException e) {
 			LOGGER.severe("Can not get Calendar from " + url);
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
-			if (lastCalendarStr == null) {
-				if (backupFile != null) {
-					LOGGER.info("Try to load Calendar from File " + backupFile.getAbsolutePath());
-					try {
-						calendarStr = readCalendarStrFromFile();
-					} catch (IOException e1) {
-						LOGGER.severe("Can not load valendar from file " + backupFile.getAbsolutePath());
-						LOGGER.log(Level.WARNING, e1.getMessage(), e1);
-						throw e1;
-					}
-				} else
-					throw e;
-			} else {
+			if (lastCalendarStr != null)
 				return calendar;
-			}
+			throw e;
 		}
-		
+
+		//Google setzt DTSTAMP for all Events to the time of the request. This would cause the strings to mismatch
 		calendarStr = calendarStr.replaceAll("DTSTAMP:[\\d]{8}T[\\d]{6}Z\n", "");
-		
+
 		// no need to reparse if it didn't change
 		if (calendarStr.equals(lastCalendarStr))
 			return calendar;
 
 		lastCalendarStr = calendarStr;
 
-		try (Reader reader = new StringReader(calendarStr)) {
-			calendar = new CalendarBuilder().build(reader);
-			saveToBackupFile();
+		try {
+			setCalendar(calendarStr);
+			//save the new version of the calendar only if it changed and is parseable.
+			saveToBackupFile(calendarStr);
 		} catch (IOException e) {
 			LOGGER.severe("Can not save new Calendar to " + backupFile.getAbsolutePath());
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
@@ -181,14 +197,12 @@ public class HttpIcal {
 		}
 		eventsNow.removeAll(removed);
 
-		if(room != null && !eventsNow.isEmpty()) {
+		if (room != null && !eventsNow.isEmpty()) {
 			return Arrays.asList(room);
 		}
-			
-			
+
 		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase())
 				.collect(Collectors.toList());
-	
 
 	}
 }
