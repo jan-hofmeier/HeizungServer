@@ -101,7 +101,6 @@ public class ZeitplanVerwalter implements Closeable {
 				if(activeSchedules.contains(activation.getName())) {
 					activeTemp=activation.getTemp();
 					active = true;
-					break;
 				}
 			}
 			
