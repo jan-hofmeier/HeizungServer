@@ -127,7 +127,9 @@ public class HttpIcal {
 				return calendar;
 			}
 		}
-
+		
+		calendarStr = calendarStr.replaceAll("DTSTAMP:[\\d]{8}T[\\d]{6}Z\n", "");
+		
 		// no need to reparse if it didn't change
 		if (calendarStr.equals(lastCalendarStr))
 			return calendar;
