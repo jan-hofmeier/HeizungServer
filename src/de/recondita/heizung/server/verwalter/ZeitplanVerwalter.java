@@ -39,7 +39,7 @@ public class ZeitplanVerwalter implements Closeable {
 	private ScheduledThreadPoolExecutor timer;
 	private HttpIcal[] iCalPlaene;
 	private SheetRoomSettings roomSettings;
-	private TempratureGetter thermometers = new TempratureGetter();
+	private TempratureGetter thermometers;
 
 	private final static Logger LOGGER = Logger.getLogger(ZeitplanVerwalter.class.getName());
 
@@ -48,7 +48,7 @@ public class ZeitplanVerwalter implements Closeable {
 		this.ventile = ventilverwalter;
 		this.configurationLoader = configurationLoader;
 		this.configurationLoader.loadVentile(ventile);
-
+		thermometers = configurationLoader.loadTempratureGetter();
 		try {
 			iCalPlaene = configurationLoader.loadIcal();
 			roomSettings = this.configurationLoader.loadSheetRoomSettings();

@@ -37,6 +37,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 
 import de.recondita.heizung.ical.HttpIcal;
+import de.recondita.heizung.server.control.TempratureGetter;
 import de.recondita.heizung.server.control.Ventil;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.control.Zeitplan;
@@ -214,5 +215,9 @@ public class ConfigLoader {
 		String id = Files.lines(Paths.get(configdir + File.separator + "roomconfig-sheetid")).toArray(String[]::new)[0];
 		return new SheetRoomSettings(loadGoogleCredentials(), GOOGLE_APPLICATION_NAME, id,
 				new File(configdir + File.separator + "roomsettings.csv"));
+	}
+	
+	public TempratureGetter loadTempratureGetter() {
+		return new TempratureGetter(new File(configdir + File.separator + "homematic").exists());
 	}
 }
