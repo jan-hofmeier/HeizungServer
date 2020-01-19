@@ -115,17 +115,18 @@ public class ZeitplanVerwalter implements Closeable {
 					ventil.setPlanOn(active);
 				else {
 					float targetTemp = active ? activeTemp : room.getOfftemp();
+					boolean targetChanged = targetTemp != ventil.getTargetTemp();
 					LOGGER.log(Level.INFO,
 							room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
-					if (targetTemp == currentTemp) {
-						if(ventil.getPlanOn() && ventil.getLastChanged() > 15 * 60000)
-							ventil.setPlanOn(false);
-						else if(!ventil.getPlanOn() && ventil.getLastChanged() > 30 * 60000)
-							ventil.setPlanOn(true);
-					}
-					else
-					{
-						ventil.setPlanOn(targetTemp > currentTemp);
+
+					if (ventil.getPlanOn() && ventil.getLastChanged() > 15 * 60000
+							|| !ventil.getPlanOn() && ventil.getLastChanged() > 30 * 60000 || targetChanged) {
+
+						if (targetTemp == currentTemp)
+							ventil.setPlanOn(!ventil.getPlanOn());
+
+						else
+							ventil.setPlanOn(targetTemp > currentTemp);
 					}
 				}
 			} else
