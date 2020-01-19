@@ -116,6 +116,7 @@ public class ZeitplanVerwalter implements Closeable {
 				else {
 					float targetTemp = active ? activeTemp : room.getOfftemp();
 					boolean targetChanged = targetTemp != ventil.getTargetTemp();
+					ventil.setTargetTemp(targetTemp);
 					LOGGER.log(Level.INFO,
 							room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
 
