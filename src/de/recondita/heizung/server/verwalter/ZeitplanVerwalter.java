@@ -91,28 +91,42 @@ public class ZeitplanVerwalter implements Closeable {
 		activeSchedules.add("on");
 
 		Map<String, Float> tempratures = thermometers.getTempratures();
-		
+		long now = System.currentTimeMillis();
+
 		for (Room room : roomSettings.getRoomSettings()) {
-			
+
 			float activeTemp = room.getOntemp();
 			boolean active = activeSchedules.contains(room.getName().toLowerCase());
-			
+
 			for (Activation activation : room.getActivations()) {
-				if(activeSchedules.contains(activation.getName())) {
-					activeTemp=activation.getTemp();
+				if (activeSchedules.contains(activation.getName())) {
+					activeTemp = activation.getTemp();
 					active = true;
 				}
 			}
-			
+
 			Ventil ventil = ventile.getVentilByName(room.getName());
 			if (ventil != null) {
 				Float currentTemp = tempratures.get(room.getName());
-				if (currentTemp == null || currentTemp.isNaN())
+				if (currentTemp != null && !currentTemp.isNaN())
+					ventil.setCurrentTemp(currentTemp);
+
+				if ((now - ventil.getLastTempUpdate()) > 15 * 60000)
 					ventil.setPlanOn(active);
 				else {
 					float targetTemp = active ? activeTemp : room.getOfftemp();
-					LOGGER.log(Level.INFO, room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
-					ventil.setPlanOn(targetTemp > currentTemp);
+					LOGGER.log(Level.INFO,
+							room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
+					if (targetTemp == currentTemp) {
+						if(ventil.getPlanOn() && ventil.getLastChanged() > 15 * 60000)
+							ventil.setPlanOn(false);
+						else if(!ventil.getPlanOn() && ventil.getLastChanged() > 30 * 60000)
+							ventil.setPlanOn(true);
+					}
+					else
+					{
+						ventil.setPlanOn(targetTemp > currentTemp);
+					}
 				}
 			} else
 				LOGGER.log(Level.WARNING, "Can't find valve " + room.getName());

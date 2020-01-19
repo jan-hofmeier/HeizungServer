@@ -12,11 +12,14 @@ public class Ventil {
 	private String name;
 	private int gpio;
 	private Ventilverwalter ventilverwalter;
+	private long lastChanged;
+	private float currentTemp;
+	private long lastTempUpdate;
+	private float targetTemp;
 
 	private static final Object lock = new Object();
-	
-	private final static Logger LOGGER = Logger
-			.getLogger(Ventilverwalter.class.getName());
+
+	private final static Logger LOGGER = Logger.getLogger(Ventilverwalter.class.getName());
 
 	public Ventil(int gpio, String name, Ventilverwalter ventilverwalter) {
 		this.gpio = gpio;
@@ -30,8 +33,11 @@ public class Ventil {
 	}
 
 	public void setPlanOn(boolean on) {
-		this.planOn = on;
-		setValue();
+		if (on != planOn) {
+			this.planOn = on;
+			lastChanged = System.currentTimeMillis();
+			setValue();
+		}
 	}
 
 	public synchronized void override(Mode mode) {
@@ -77,4 +83,30 @@ public class Ventil {
 	public boolean isOn() {
 		return gpioOn;
 	}
+
+	public float getTargetTemp() {
+		return targetTemp;
+	}
+
+	public void setTargetTemp(float targetTemp) {
+		this.targetTemp = targetTemp;
+	}
+
+	public long getLastChanged() {
+		return lastChanged;
+	}
+
+	public long getLastTempUpdate() {
+		return lastTempUpdate;
+	}
+	
+	public float getCurrentTemp() {
+		return currentTemp;
+	}
+
+	public void setCurrentTemp(float currentTemp) {
+		this.currentTemp = currentTemp;
+		this.lastTempUpdate = System.currentTimeMillis();
+	}
+	
 }
