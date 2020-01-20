@@ -120,8 +120,8 @@ public class ZeitplanVerwalter implements Closeable {
 					LOGGER.log(Level.INFO,
 							room.getName() + ": Target Temp: " + targetTemp + " Current Temp: " + currentTemp);
 
-					if (ventil.getPlanOn() && ventil.getLastChanged() > 15 * 60000
-							|| !ventil.getPlanOn() && ventil.getLastChanged() > 30 * 60000 || targetChanged) {
+					if (ventil.getPlanOn() && now - ventil.getLastChanged() > 15 * 60000
+							|| !ventil.getPlanOn() && now - ventil.getLastChanged() > 30 * 60000 || targetChanged) {
 
 						if (targetTemp == currentTemp)
 							ventil.setPlanOn(!ventil.getPlanOn());
