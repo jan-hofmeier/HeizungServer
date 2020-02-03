@@ -13,8 +13,8 @@ public class Ventil {
 	private int gpio;
 	private Ventilverwalter ventilverwalter;
 	private long lastChanged;
-	private float currentTemp;
-	private long lastTempUpdate;
+	private volatile float currentTemp;
+	private volatile long lastTempUpdate;
 	private float targetTemp;
 
 	private static final Object lock = new Object();

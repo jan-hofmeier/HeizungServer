@@ -38,7 +38,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 
 	public synchronized void createVentil(int pin, String name) throws IOException {
 		Ventil v = getVentilByName(name);
-		
+
 		if (v != null) {
 			LOGGER.severe("Ventil already exists: " + name);
 			return;
@@ -88,6 +88,12 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		return nameMap.get(name);
 	}
 
+	public void setTemprature(String room, float temp) {
+		for (Ventil v : nameMap.values())
+			if (v.getName().startsWith(room))
+				v.setCurrentTemp(temp);
+	}
+
 	public synchronized void shutdown() {
 		Collection<Integer> c = gpioMap.keySet();
 		try (FileWriter unexport = new FileWriter("/sys/class/gpio/unexport");) {
@@ -122,7 +128,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 	}
 
 	public void setActiveValves(Set<String> activeValves) {
-		for(Ventil v: this) {
+		for (Ventil v : this) {
 			v.setPlanOn(activeValves.contains(v.getName().toLowerCase()));
 		}
 	}

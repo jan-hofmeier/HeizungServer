@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.network.NetworkControl;
+import de.recondita.heizung.server.network.TempratureReceiver;
 import de.recondita.heizung.server.verwalter.ZeitplanVerwalter;
 import de.recondita.heizung.xml.ConfigLoader;
 import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
@@ -25,6 +26,8 @@ public class Service implements Daemon {
 	private static Ventilverwalter ventilverwalter = Ventilverwalter
 			.getInstance();
 	private NetworkControl networkControl;
+	
+	private TempratureReceiver tempratureReceiver;
 
 	private final static Logger LOGGER = Logger.getLogger(Service.class.getName());
 
@@ -53,6 +56,11 @@ public class Service implements Daemon {
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
+		try {
+			tempratureReceiver = new TempratureReceiver((room,temp) -> ventilverwalter.setTemprature(room,temp));
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 
 	private static ZeitplanVerwalter createZeitplanVerwalter(String[] args)
@@ -67,6 +75,7 @@ public class Service implements Daemon {
 	public void start() throws Exception {
 		try {
 			zeitplanverwalter.start();
+			tempratureReceiver.startListener();
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			throw e;
@@ -76,6 +85,11 @@ public class Service implements Daemon {
 
 	@Override
 	public void stop() throws Exception {
+		try {
+			tempratureReceiver.close();
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		}
 		try {
 			networkControl.close();
 		} catch (Exception e) {
