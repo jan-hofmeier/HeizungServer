@@ -22,7 +22,7 @@ public class TempratureReceiver implements AutoCloseable {
 
 	public TempratureReceiver(TempratureCallBack callback) throws IOException {
 		this.callback = callback;
-		serverSocket = new ServerSocket(5000);
+		serverSocket = new ServerSocket(50000);
 	}
 
 	private void acceptLoop() {
