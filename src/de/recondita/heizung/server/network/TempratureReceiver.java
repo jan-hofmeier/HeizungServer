@@ -48,6 +48,7 @@ public class TempratureReceiver implements AutoCloseable {
 			this.socket = connection;
 		}
 
+		@Override
 		public void run() {
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 				String line;
