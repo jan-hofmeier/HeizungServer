@@ -107,13 +107,14 @@ public class ZeitplanVerwalter implements Closeable {
 
 			Ventil ventil = ventile.getVentilByName(room.getName());
 			if (ventil != null) {
-				Float currentTemp = tempratures.get(room.getName());
-				if (currentTemp != null && !currentTemp.isNaN())
-					ventil.setCurrentTemp(currentTemp);
+				Float currentTempUpdate = tempratures.get(room.getName());
+				if (currentTempUpdate != null && !currentTempUpdate.isNaN())
+					ventil.setCurrentTemp(currentTempUpdate);
 
 				if ((now - ventil.getLastTempUpdate()) > 15 * 60000)
 					ventil.setPlanOn(active);
 				else {
+					float currentTemp = ventil.getCurrentTemp();
 					float targetTemp = active ? activeTemp : room.getOfftemp();
 					boolean targetChanged = targetTemp != ventil.getTargetTemp();
 					ventil.setTargetTemp(targetTemp);
