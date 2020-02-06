@@ -37,7 +37,7 @@ public class TempratureReceiver implements AutoCloseable {
 	}
 
 	public void startListener() {
-		new Thread(() -> acceptLoop());
+		new Thread(() -> acceptLoop()).start();
 	}
 
 	private class ServiceRequest implements Runnable {
@@ -53,7 +53,7 @@ public class TempratureReceiver implements AutoCloseable {
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 				String line;
 				while ((line = br.readLine()) != null) {
-					LOGGER.info("Recived: " + line);
+					LOGGER.info("Received: " + line);
 					String[] parts = line.split(":");
 					if (parts.length < 2)
 						continue;
