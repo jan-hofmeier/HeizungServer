@@ -18,7 +18,7 @@ public class TempratureReceiver implements AutoCloseable {
 
 	private ExecutorService executorService = Executors.newWorkStealingPool(10);
 
-	TempratureCallBack callback;
+	private TempratureCallBack callback;
 
 	public TempratureReceiver(TempratureCallBack callback) throws IOException {
 		this.callback = callback;
