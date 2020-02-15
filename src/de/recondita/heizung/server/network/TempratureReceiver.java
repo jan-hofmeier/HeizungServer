@@ -18,7 +18,7 @@ public class TempratureReceiver implements AutoCloseable {
 
 	private ServerSocket serverSocket;
 
-	private ExecutorService executorService = Executors.newWorkStealingPool(10);
+	private ExecutorService executorService = Executors.newWorkStealingPool(2);
 
 	private TempratureCallBack callback;
 	
