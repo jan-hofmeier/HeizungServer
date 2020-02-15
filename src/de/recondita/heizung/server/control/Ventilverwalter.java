@@ -55,8 +55,10 @@ public class Ventilverwalter implements Iterable<Ventil> {
 	}
 
 	private void enable(int pin) throws IOException {
-		try (FileWriter export = new FileWriter("/sys/class/gpio/export");) {
-			export.write(Integer.toString(pin));
+		if (!new File("/sys/class/gpio/gpio" + pin).exists()) {
+			try (FileWriter export = new FileWriter("/sys/class/gpio/export");) {
+				export.write(Integer.toString(pin));
+			}
 		}
 		while (!new File("/sys/class/gpio/gpio" + pin + "/active_low").exists())
 			try {
