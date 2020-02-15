@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -19,6 +21,8 @@ public class TempratureReceiver implements AutoCloseable {
 	private ExecutorService executorService = Executors.newWorkStealingPool(10);
 
 	private TempratureCallBack callback;
+	
+	private Timer timeoutTimer;
 
 	public TempratureReceiver(TempratureCallBack callback) throws IOException {
 		this.callback = callback;
@@ -37,6 +41,7 @@ public class TempratureReceiver implements AutoCloseable {
 	}
 
 	public void startListener() {
+		timeoutTimer = new Timer();
 		new Thread(() -> acceptLoop()).start();
 	}
 
@@ -46,10 +51,26 @@ public class TempratureReceiver implements AutoCloseable {
 
 		public ServiceRequest(Socket connection) {
 			this.socket = connection;
+			LOGGER.info("Client connected with IP: " + socket.getInetAddress());
 		}
 
 		@Override
 		public void run() {
+			LOGGER.info("Read from Client");
+			TimerTask timeout = new TimerTask() {
+				
+				@Override
+				public void run() {
+						LOGGER.info("closed connection by timeout");
+						try {
+							socket.close();
+						} catch (IOException e) {
+							LOGGER.log(Level.INFO, e.getMessage(), e);
+						}
+					
+				}
+			};
+			timeoutTimer.schedule(timeout, 5000);
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 				String line;
 				while ((line = br.readLine()) != null) {
@@ -65,7 +86,10 @@ public class TempratureReceiver implements AutoCloseable {
 				}
 			} catch (IOException e) {
 				LOGGER.log(Level.WARNING, "Exception while reciving Temprature:\n" + e.getMessage(), e);
+			}finally {
+				timeout.cancel();
 			}
+			LOGGER.info("Closed connection");
 		}
 	}
 	
@@ -75,6 +99,7 @@ public class TempratureReceiver implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
+		timeoutTimer.cancel();
 		serverSocket.close();
 	}
 
