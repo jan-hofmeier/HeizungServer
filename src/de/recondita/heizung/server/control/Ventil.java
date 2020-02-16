@@ -8,7 +8,7 @@ public class Ventil {
 
 	private boolean gpioOn = false;
 	private boolean planOn = false;
-	private Mode mode = Mode.AUTO;
+	private Mode mode = Mode.PLAN;
 	private String name;
 	private int gpio;
 	private Ventilverwalter ventilverwalter;
@@ -55,7 +55,7 @@ public class Ventil {
 
 	private void setValue() {
 		synchronized (lock) {
-			gpioOn = mode == Mode.ON || (mode == Mode.AUTO && planOn);
+			gpioOn = mode == Mode.ON || (mode == Mode.PLAN && planOn);
 			ventilverwalter.notifyChange(this);
 			if (gpio >= 0)
 				try (FileWriter fw = new FileWriter("/sys/class/gpio/gpio" + gpio + "/value");) {
