@@ -52,7 +52,7 @@ public class Service implements Daemon {
 			throw e;
 		}
 		try {
-			networkControl = new NetworkControl(1001,ventilverwalter);
+			networkControl = new NetworkControl(80,ventilverwalter);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
@@ -76,6 +76,7 @@ public class Service implements Daemon {
 		try {
 			zeitplanverwalter.start();
 			tempratureReceiver.startListener();
+			networkControl.start();
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			throw e;
