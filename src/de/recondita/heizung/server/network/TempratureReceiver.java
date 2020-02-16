@@ -51,7 +51,7 @@ public class TempratureReceiver implements AutoCloseable {
 
 		public ServiceRequest(Socket connection) {
 			this.socket = connection;
-			LOGGER.info("Client connected with IP: " + socket.getInetAddress());
+			LOGGER.info("Client connected with IP: " + socket.getInetAddress().getHostName());
 		}
 
 		@Override

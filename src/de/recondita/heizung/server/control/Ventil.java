@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public class Ventil {
 
-	private boolean gpioOn = false;
+	private volatile boolean gpioOn = false;
 	private boolean planOn = false;
 	private Mode mode = Mode.PLAN;
 	private String name;

@@ -42,32 +42,40 @@ public class NetworkControl implements Closeable {
 	private class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange exchange) {
-			try(OutputStream os = exchange.getResponseBody()) {
+			try (OutputStream os = exchange.getResponseBody()) {
 				LOGGER.info("Start handling Request from: " + exchange.getRemoteAddress().getHostName());
 				LOGGER.info("Request Method: " + exchange.getRequestMethod());
 				if ("POST".equals(exchange.getRequestMethod())) {
 					String requestBody = new BufferedReader(new InputStreamReader(exchange.getRequestBody())).lines()
 							.parallel().collect(Collectors.joining("\n"));
 					LOGGER.info("Request Body: " + requestBody);
-					
+
 					String[] valveSettings = requestBody.split("&");
-					for(String valveSetting: valveSettings) {
-						String[] parts=valveSetting.split("=");
+					for (String valveSetting : valveSettings) {
+						String[] parts = valveSetting.split("=");
 						String valveName = URLDecoder.decode(parts[0], "UTF-8");
-						ventilverwalter.getVentilByName(valveName).override(Mode.valueOf(parts[1]));			
+						ventilverwalter.getVentilByName(valveName).override(Mode.valueOf(parts[1]));
 					}
-					
+
 					Headers responseHeaders = exchange.getResponseHeaders();
 					responseHeaders.set("Location", "/");
 					exchange.sendResponseHeaders(303, 0);
-					
+
 				} else {
 					StringBuilder responseStr = new StringBuilder(header);
 
 					for (Ventil valve : ventilverwalter) {
 						responseStr.append("<p><h1>");
 						responseStr.append(valve.getName());
-						responseStr.append("</h1>");
+						responseStr.append(" ");
+						responseStr.append(valve.getCurrentTemp());
+						responseStr.append("°C ");
+						responseStr.append("<font color=");
+						if (valve.isOn())
+							responseStr.append("\"green\">AN");
+						else
+							responseStr.append("\"red\">AUS");
+						responseStr.append("</font></h1>");
 						generateRadio(responseStr, valve.getName(), valve.getMode());
 						responseStr.append("</p>");
 					}
@@ -77,7 +85,7 @@ public class NetworkControl implements Closeable {
 					Headers responseHeaders = exchange.getResponseHeaders();
 					responseHeaders.set("Content-Type", "text/html; charset=utf-8");
 					byte[] responseBytes = responseStr.toString().getBytes("UTF-8");
-					exchange.sendResponseHeaders(200, responseBytes.length);					
+					exchange.sendResponseHeaders(200, responseBytes.length);
 					os.write(responseBytes);
 				}
 				LOGGER.info("Finished handling Request from: " + exchange.getRemoteAddress().getHostName());
