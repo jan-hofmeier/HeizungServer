@@ -1,11 +1,15 @@
 package de.recondita.heizung.server.network;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -21,7 +25,7 @@ public class NetworkControl implements Closeable {
 
 	private final static String header = "<!DOCTYPE html>\n<html lang=\"de\"><head><title>Heizung</title></head><body><form>";
 	private final static String footer = "<button id=\"apply\" formmethod=\"post\">Übernehmen</button>"
-			+ "<button type=\"reset\"><Reset</button>" + "</form></body></html>";
+			+ "<button type=\"reset\">Reset</button>" + "</form></body></html>";
 
 	private final Ventilverwalter ventilverwalter;
 	private HttpServer httpServer;
@@ -38,25 +42,42 @@ public class NetworkControl implements Closeable {
 	private class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange exchange) {
-			try {
+			try(OutputStream os = exchange.getResponseBody()) {
 				LOGGER.info("Start handling Request from: " + exchange.getRemoteAddress().getHostName());
-				StringBuilder responseStr = new StringBuilder(header);
+				LOGGER.info("Request Method: " + exchange.getRequestMethod());
+				if ("POST".equals(exchange.getRequestMethod())) {
+					String requestBody = new BufferedReader(new InputStreamReader(exchange.getRequestBody())).lines()
+							.parallel().collect(Collectors.joining("\n"));
+					LOGGER.info("Request Body: " + requestBody);
+					
+					String[] valveSettings = requestBody.split("&");
+					for(String valveSetting: valveSettings) {
+						String[] parts=valveSetting.split("=");
+						String valveName = URLDecoder.decode(parts[0], "UTF-8");
+						ventilverwalter.getVentilByName(valveName).override(Mode.valueOf(parts[1]));			
+					}
+					
+					Headers responseHeaders = exchange.getResponseHeaders();
+					responseHeaders.set("Location", "/");
+					exchange.sendResponseHeaders(303, 0);
+					
+				} else {
+					StringBuilder responseStr = new StringBuilder(header);
 
-				for (Ventil room : ventilverwalter) {
-					responseStr.append("<p><h1>");
-					responseStr.append(room.getName());
-					responseStr.append("</h1>");
-					generateRadio(responseStr, room.getName(), room.getMode());
-					responseStr.append("</p>");
-				}
+					for (Ventil valve : ventilverwalter) {
+						responseStr.append("<p><h1>");
+						responseStr.append(valve.getName());
+						responseStr.append("</h1>");
+						generateRadio(responseStr, valve.getName(), valve.getMode());
+						responseStr.append("</p>");
+					}
 
-				responseStr.append(footer);
-				
-				Headers responseHeaders = exchange.getResponseHeaders();
-				responseHeaders.set("Content-Type", "text/html; charset=utf-8");
-				byte[] responseBytes = responseStr.toString().getBytes("UTF-8");
-				exchange.sendResponseHeaders(200, responseBytes.length);
-				try (OutputStream os = exchange.getResponseBody()) {
+					responseStr.append(footer);
+
+					Headers responseHeaders = exchange.getResponseHeaders();
+					responseHeaders.set("Content-Type", "text/html; charset=utf-8");
+					byte[] responseBytes = responseStr.toString().getBytes("UTF-8");
+					exchange.sendResponseHeaders(200, responseBytes.length);					
 					os.write(responseBytes);
 				}
 				LOGGER.info("Finished handling Request from: " + exchange.getRemoteAddress().getHostName());
@@ -64,16 +85,16 @@ public class NetworkControl implements Closeable {
 				LOGGER.log(Level.WARNING, "Exception while hanfling HTTP Request:\n" + e.getMessage(), e);
 			}
 		}
-		
-		private void generateRadio(StringBuilder sb, String room, Mode value) {
+
+		private void generateRadio(StringBuilder sb, String valve, Mode value) {
 			sb.append("<fieldset>");
 			for (Mode modeE : Mode.values()) {
 				String modeStr = modeE.name();
 				sb.append("<input type=\"radio\" id=\"");
-				sb.append(room);
+				sb.append(valve);
 				sb.append(modeStr);
 				sb.append("\" name=\"");
-				sb.append(room);
+				sb.append(valve);
 				sb.append("\" value=\"");
 				sb.append(modeStr);
 				sb.append("\"");
@@ -81,7 +102,7 @@ public class NetworkControl implements Closeable {
 					sb.append(" checked");
 				sb.append(" />");
 				sb.append("<label for=\"");
-				sb.append(room);
+				sb.append(valve);
 				sb.append(modeStr);
 				sb.append("\">");
 				sb.append(modeStr);
