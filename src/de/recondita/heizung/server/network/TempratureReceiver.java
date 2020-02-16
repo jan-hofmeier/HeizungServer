@@ -79,7 +79,7 @@ public class TempratureReceiver implements AutoCloseable {
 					if (parts.length < 2)
 						continue;
 					try {
-						callback.updateTemp(parts[0].trim(), new Float(parts[1].trim()));
+						callback.updateTemp(parts[0].trim(), Float.parseFloat(parts[1].trim()));
 					} catch (NumberFormatException ne) {
 						LOGGER.log(Level.WARNING, "Exception while reciving Temprature:\n" + ne.getMessage(), ne);
 					}
