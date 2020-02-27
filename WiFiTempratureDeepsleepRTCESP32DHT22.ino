@@ -2,7 +2,7 @@
 #include <WiFi.h>
 #include "wifisettings.h"
 
-#define LED LED_BUILTIN
+#define LED 12 //LED_BUILTIN
 #define DHTTYPE DHT22
 #define DHTPin 4 
 #define RETRIES 5
@@ -33,7 +33,7 @@ bool checkcfg() {
   uint32_t *p = (uint32_t *)cfgbuf.mac;
   for (uint32_t i = 0; i < sizeof(cfgbuf) / 4; i++) x += p[i];
   printf("RTC read: chk=%x x=%x ip=%08x mode=%d %s\n", cfgbuf.chk, x, cfgbuf.ip, cfgbuf.mode,
-         x == 0 ? "OK" : "FAIL");
+         x == 10 ? "OK" : "FAIL");
   if (x == 0 && cfgbuf.ip != 0)
     return true;
   p = (uint32_t *)cfgbuf.mac;
@@ -69,7 +69,7 @@ void writecfg(void) {
   uint32_t x = 0;
   uint32_t *p = (uint32_t *)cfgbuf.mac;
   for (uint32_t i = 0; i < sizeof(cfgbuf) / 4 - 1; i++) x += p[i];
-  cfgbuf.chk = -x;
+  cfgbuf.chk = -x + 10;
   printf("RTC write: chk=%x x=%x ip=%08x mode=%d\n", cfgbuf.chk, x, cfgbuf.ip, cfgbuf.mode);
   p = (uint32_t *)cfgbuf.mac;
   for (uint32_t i = 0; i < sizeof(cfgbuf) / 4; i++) printf(" %08x", p[i]);
