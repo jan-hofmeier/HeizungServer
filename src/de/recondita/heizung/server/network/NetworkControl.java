@@ -35,14 +35,36 @@ public class NetworkControl implements Closeable {
 	public NetworkControl(int port, Ventilverwalter ventilverwalter) throws IOException {
 		this.ventilverwalter = ventilverwalter;
 		httpServer = HttpServer.create(new InetSocketAddress(port), 0);
-		httpServer.createContext("/", new MyHandler());
+		httpServer.createContext("/", new WebsiteHandler());
+		httpServer.createContext("/state", new JsonStateHandler());
 		httpServer.setExecutor(null); // creates a default executor
 	}
 
-	private class MyHandler implements HttpHandler {
+	private static void sendResonseString(HttpExchange exchange, String response, String contentType)
+			throws IOException {
+		Headers responseHeaders = exchange.getResponseHeaders();
+		responseHeaders.set("Content-Type", contentType + "; charset=utf-8");
+		byte[] responseBytes = response.getBytes("UTF-8");
+		exchange.sendResponseHeaders(200, responseBytes.length);
+		try (OutputStream os = exchange.getResponseBody()) {
+			os.write(responseBytes);
+		}
+	}
+
+	private class JsonStateHandler implements HttpHandler {
+
+		@Override
+		public void handle(HttpExchange exchange) throws IOException {
+			String responseStr = ventilverwalter.toJson().toString();
+			sendResonseString(exchange, responseStr, "application/json");
+		}
+
+	}
+
+	private class WebsiteHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange exchange) {
-			try (OutputStream os = exchange.getResponseBody()) {
+			try {
 				LOGGER.info("Start handling Request from: " + exchange.getRemoteAddress().getHostName());
 				LOGGER.info("Request Method: " + exchange.getRequestMethod());
 				if ("POST".equals(exchange.getRequestMethod())) {
@@ -82,16 +104,13 @@ public class NetworkControl implements Closeable {
 
 					responseStr.append(footer);
 
-					Headers responseHeaders = exchange.getResponseHeaders();
-					responseHeaders.set("Content-Type", "text/html; charset=utf-8");
-					byte[] responseBytes = responseStr.toString().getBytes("UTF-8");
-					exchange.sendResponseHeaders(200, responseBytes.length);
-					os.write(responseBytes);
+					sendResonseString(exchange, responseStr.toString(), "text/html");
 				}
-				LOGGER.info("Finished handling Request from: " + exchange.getRemoteAddress().getHostName());
+
 			} catch (Exception e) {
 				LOGGER.log(Level.WARNING, "Exception while hanfling HTTP Request:\n" + e.getMessage(), e);
 			}
+			LOGGER.info("Finished handling Request from: " + exchange.getRemoteAddress().getHostName());
 		}
 
 		private void generateRadio(StringBuilder sb, String valve, Mode value) {

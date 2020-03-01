@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonObject;
+
 public class Ventilverwalter implements Iterable<Ventil> {
 
 	private static final Ventilverwalter INSTANCE = new Ventilverwalter();
@@ -145,5 +147,11 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		for (Ventil v : this) {
 			v.setPlanOn(activeValves.contains(v.getName().toLowerCase()));
 		}
+	}
+	
+	public JsonObject toJson() {
+		JsonObject json = new JsonObject();
+		nameMap.forEach((name, ventil) -> json.add(name, ventil.toJson()));
+		return json;
 	}
 }

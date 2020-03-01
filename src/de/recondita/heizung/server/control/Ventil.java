@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonObject;
+
 public class Ventil {
 
 	private volatile boolean gpioOn = false;
@@ -107,6 +109,17 @@ public class Ventil {
 	public void setCurrentTemp(float currentTemp) {
 		this.currentTemp = currentTemp;
 		this.lastTempUpdate = System.currentTimeMillis();
+	}
+	
+	public JsonObject toJson() {
+		JsonObject json = new JsonObject();
+		json.addProperty("currentTemprature", getCurrentTemp());
+		json.addProperty("lastTempUpdate", getLastTempUpdate());
+		json.addProperty("targetTemprature", getTargetTemp());
+		json.addProperty("mode", getMode().name());
+		json.addProperty("planOn", getPlanOn());
+		json.addProperty("on", isOn());
+		return json;
 	}
 	
 }
