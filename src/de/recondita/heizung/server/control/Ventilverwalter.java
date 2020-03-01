@@ -1,6 +1,7 @@
 package de.recondita.heizung.server.control;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,9 +72,20 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		} catch (InterruptedException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
-		try (FileWriter activelow = new FileWriter("/sys/class/gpio/gpio" + pin + "/active_low");) {
-			activelow.write("1");
-		}
+		boolean success = false;
+		do {
+			try (FileWriter activelow = new FileWriter("/sys/class/gpio/gpio" + pin + "/active_low");) {
+				activelow.write("1");
+				success=true;
+			}catch (FileNotFoundException e) {
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					LOGGER.log(Level.WARNING, e1.getMessage(), e1);
+				}
+			}
+		} while (!success);
 		try (FileWriter direction = new FileWriter("/sys/class/gpio/gpio" + pin + "/direction");
 				FileWriter value = new FileWriter("/sys/class/gpio/gpio" + pin + "/value");) {
 			direction.write("out");
