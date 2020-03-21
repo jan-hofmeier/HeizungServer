@@ -82,6 +82,7 @@ public class NetworkControl implements Closeable {
 					Headers responseHeaders = exchange.getResponseHeaders();
 					responseHeaders.set("Location", "/");
 					exchange.sendResponseHeaders(303, 0);
+					exchange.getResponseBody().close();
 
 				} else {
 					StringBuilder responseStr = new StringBuilder(header);
