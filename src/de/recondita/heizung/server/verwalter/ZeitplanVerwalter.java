@@ -98,12 +98,13 @@ public class ZeitplanVerwalter implements Closeable {
 			float activeTemp = room.getOntemp();
 			boolean active = activeSchedules.contains(room.getName().toLowerCase());
 
-			for (Activation activation : room.getActivations()) {
-				if (activeSchedules.contains(activation.getName())) {
-					activeTemp = activation.getTemp();
-					active = true;
+			if (!active)
+				for (Activation activation : room.getActivations()) {
+					if (activeSchedules.contains(activation.getName())) {
+						activeTemp = activation.getTemp();
+						active = true;
+					}
 				}
-			}
 
 			Ventil ventil = ventile.getVentilByName(room.getName());
 			if (ventil != null) {
@@ -129,6 +130,9 @@ public class ZeitplanVerwalter implements Closeable {
 						else
 							ventil.setPlanOn(targetTemp > currentTemp);
 					}
+					
+					if (Math.abs(targetTemp - currentTemp) > 0.2)
+						ventil.setPlanOn(targetTemp > currentTemp);
 				}
 			} else
 				LOGGER.log(Level.WARNING, "Can't find valve " + room.getName());
