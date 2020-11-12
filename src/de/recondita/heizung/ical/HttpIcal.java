@@ -171,7 +171,8 @@ public class HttpIcal {
 	}
 
 	public List<String> getActiveGroups() throws IOException, ParserException {
-
+		LOGGER.log(Level.INFO, "getting calendar for room " + room);
+		
 		Calendar calendar = getCalendar();
 
 		DateTime now = new DateTime(java.util.Calendar.getInstance().getTime());

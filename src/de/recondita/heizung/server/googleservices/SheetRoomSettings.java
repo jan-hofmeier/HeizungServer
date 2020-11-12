@@ -127,6 +127,7 @@ public class SheetRoomSettings {
 	}
 
 	public List<Room> getRoomSettings() throws IOException, CsvException {
+		LOGGER.log(Level.INFO, "getting room settings from google");
 		List<List<Object>> values;
 		try {
 			ValueRange response = service.spreadsheets().values().get(sheetId, "Räume!A2:D").execute();
