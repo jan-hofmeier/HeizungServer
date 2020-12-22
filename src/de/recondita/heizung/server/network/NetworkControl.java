@@ -100,13 +100,13 @@ public class NetworkControl implements Closeable {
 							responseStr.append("\"green\">AN");
 						else
 							responseStr.append("\"red\">AUS");
-						responseStr.append("</font>");
+						responseStr.append("</font> ");
 						float humidity = valve.getCurrentHumidity();
 						if(humidity >= 0) {
-							responseStr.append(" ");
 							responseStr.append(humidity);
+							responseStr.append("% ");
 						}
-						responseStr.append("% - ");
+						responseStr.append("- ");
 						responseStr.append(dateFormatter.format(valve.getLastTempUpdate()));
 						responseStr.append("</h1>");
 						generateRadio(responseStr, valve.getName(), valve.getMode());
