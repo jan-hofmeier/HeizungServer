@@ -54,6 +54,7 @@ public class MqttListener implements Closeable {
 		});
 		MqttConnectOptions conOpt = new MqttConnectOptions();
 		conOpt.setAutomaticReconnect(true);
+		conOpt.setCleanSession(true);
 		mqttClient.connect(conOpt);
 	}
 
