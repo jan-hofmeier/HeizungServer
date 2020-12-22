@@ -1,8 +1,10 @@
 package de.recondita.heizung.xml;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -216,8 +218,23 @@ public class ConfigLoader {
 		return new SheetRoomSettings(loadGoogleCredentials(), GOOGLE_APPLICATION_NAME, id,
 				new File(configdir + File.separator + "roomsettings.csv"));
 	}
-	
+
 	public TempratureGetter loadTempratureGetter() {
 		return new TempratureGetter(new File(configdir + File.separator + "homematic").exists());
+	}
+
+	public String[] loadMQTTConfig() throws IOException {
+		String[] ret = null; // default config
+		File mqttfile = new File(configdir + File.separator + "mqtt-config.txt");
+		if (mqttfile.exists()) {
+			LOGGER.info("Found MQTT config: " + mqttfile);
+			try (BufferedReader br = new BufferedReader(new FileReader(mqttfile))) {
+				ret = new String[3];
+				for (int i = 0; i < ret.length; i++) {
+					ret[i] = br.readLine(); // username
+				}
+			}
+		}
+		return ret;
 	}
 }

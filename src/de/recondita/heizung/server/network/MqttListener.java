@@ -22,26 +22,26 @@ public class MqttListener implements Closeable {
 
 	private MqttClient mqttClient;
 
-	public MqttListener(String broker, String clientId, Iterable<Ventil> valves) throws MqttException {
-		mqttClient = new MqttClient(broker, clientId, new MemoryPersistence());
+	public MqttListener(String[] config, Iterable<Ventil> valves) throws MqttException {
+		mqttClient = new MqttClient(config[0], config[1], new MemoryPersistence());
 		mqttClient.setCallback(new MqttCallbackExtended() {
-			
+
 			@Override
 			public void messageArrived(String topic, MqttMessage message) throws Exception {
-				LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());			
+				LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());
 			}
-			
+
 			@Override
 			public void deliveryComplete(IMqttDeliveryToken token) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void connectionLost(Throwable cause) {
-				LOGGER.log(Level.SEVERE, "MQTT: connection lost");				
+				LOGGER.log(Level.SEVERE, "MQTT: connection lost");
 			}
-			
+
 			@Override
 			public void connectComplete(boolean reconnect, String serverURI) {
 				try {
@@ -55,6 +55,10 @@ public class MqttListener implements Closeable {
 		MqttConnectOptions conOpt = new MqttConnectOptions();
 		conOpt.setAutomaticReconnect(true);
 		conOpt.setCleanSession(true);
+		if (config[2] != null) {
+			conOpt.setUserName(config[1]);
+			conOpt.setPassword(config[2].toCharArray());
+		}
 		mqttClient.connect(conOpt);
 	}
 
