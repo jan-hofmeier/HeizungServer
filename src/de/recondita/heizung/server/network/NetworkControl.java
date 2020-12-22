@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -86,7 +88,7 @@ public class NetworkControl implements Closeable {
 
 				} else {
 					StringBuilder responseStr = new StringBuilder(header);
-
+					DateFormat dateFormatter = new SimpleDateFormat("HH:mm");
 					for (Ventil valve : ventilverwalter) {
 						responseStr.append("<p><h1>");
 						responseStr.append(valve.getName());
@@ -99,6 +101,9 @@ public class NetworkControl implements Closeable {
 						else
 							responseStr.append("\"red\">AUS");
 						responseStr.append("</font></h1>");
+						responseStr.append(valve.getCurrentHumidity());
+						responseStr.append("% - ");
+						responseStr.append(dateFormatter.format(valve.getLastTempUpdate()));
 						generateRadio(responseStr, valve.getName(), valve.getMode());
 						responseStr.append("</p>");
 					}

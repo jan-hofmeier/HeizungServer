@@ -154,4 +154,10 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		nameMap.forEach((name, ventil) -> json.add(name, ventil.toJson()));
 		return json;
 	}
+
+	public void setHumidity(String room, float humidity) {
+		for (Ventil v : nameMap.values())
+			if (v.getName().startsWith(room))
+				v.setCurrentHumidity(humidity);
+	}
 }

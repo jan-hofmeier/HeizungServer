@@ -82,6 +82,8 @@ public class TempratureReceiver implements AutoCloseable {
 						String room = parts[0].trim();
 						parts = parts[1].split("/");
 						callback.updateTemp(room, Float.parseFloat(parts[0].trim()));
+						if(parts.length > 1)
+							callback.updateHumidity(room, Float.parseFloat(parts[1].trim()));
 					} catch (NumberFormatException ne) {
 						LOGGER.log(Level.WARNING, "Exception while reciving Temprature:\n" + ne.getMessage(), ne);
 					}
@@ -97,6 +99,7 @@ public class TempratureReceiver implements AutoCloseable {
 	
 	public interface TempratureCallBack{
 		public void updateTemp(String room, float temp);
+		public void updateHumidity(String room, float temp);
 	}
 
 	@Override

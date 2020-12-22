@@ -18,6 +18,7 @@ public class Ventil {
 	private volatile float currentTemp;
 	private volatile long lastTempUpdate;
 	private float targetTemp;
+	private volatile float currentHumidity;
 
 	private static final Object lock = new Object();
 
@@ -111,6 +112,14 @@ public class Ventil {
 		this.lastTempUpdate = System.currentTimeMillis();
 	}
 	
+	public float getCurrentHumidity() {
+		return currentHumidity;
+	}
+
+	public void setCurrentHumidity(float currentHumidity) {
+		this.currentHumidity = currentHumidity;
+	}
+
 	public JsonObject toJson() {
 		JsonObject json = new JsonObject();
 		json.addProperty("currentTemprature", getCurrentTemp());

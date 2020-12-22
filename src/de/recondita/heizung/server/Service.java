@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.network.NetworkControl;
 import de.recondita.heizung.server.network.TempratureReceiver;
+import de.recondita.heizung.server.network.TempratureReceiver.TempratureCallBack;
 import de.recondita.heizung.server.verwalter.ZeitplanVerwalter;
 import de.recondita.heizung.xml.ConfigLoader;
 import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
@@ -57,7 +58,18 @@ public class Service implements Daemon {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
 		try {
-			tempratureReceiver = new TempratureReceiver((room,temp) -> ventilverwalter.setTemprature(room,temp));
+			tempratureReceiver = new TempratureReceiver(new TempratureCallBack() {
+				
+				@Override
+				public void updateTemp(String room, float temp) {
+					ventilverwalter.setTemprature(room,temp);					
+				}
+				
+				@Override
+				public void updateHumidity(String room, float temp) {
+					ventilverwalter.setHumidity(room,temp);
+				}
+			});
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
