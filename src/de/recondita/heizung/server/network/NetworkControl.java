@@ -101,7 +101,11 @@ public class NetworkControl implements Closeable {
 						else
 							responseStr.append("\"red\">AUS");
 						responseStr.append("</font>");
-						responseStr.append(valve.getCurrentHumidity());
+						float humidity = valve.getCurrentHumidity();
+						if(humidity >= 0) {
+							responseStr.append(" ");
+							responseStr.append(humidity);
+						}
 						responseStr.append("% - ");
 						responseStr.append(dateFormatter.format(valve.getLastTempUpdate()));
 						responseStr.append("</h1>");

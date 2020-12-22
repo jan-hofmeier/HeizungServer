@@ -18,7 +18,7 @@ public class Ventil {
 	private volatile float currentTemp;
 	private volatile long lastTempUpdate;
 	private float targetTemp;
-	private volatile float currentHumidity;
+	private volatile float currentHumidity = -1;
 
 	private static final Object lock = new Object();
 
