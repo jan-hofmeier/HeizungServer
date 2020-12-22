@@ -14,6 +14,7 @@ import org.apache.commons.daemon.DaemonContext;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.server.control.Ventilverwalter;
+import de.recondita.heizung.server.network.MqttListener;
 import de.recondita.heizung.server.network.NetworkControl;
 import de.recondita.heizung.server.network.TempratureReceiver;
 import de.recondita.heizung.server.network.TempratureReceiver.TempratureCallBack;
@@ -29,6 +30,8 @@ public class Service implements Daemon {
 	private NetworkControl networkControl;
 	
 	private TempratureReceiver tempratureReceiver;
+	
+	private MqttListener mqttListener;
 
 	private final static Logger LOGGER = Logger.getLogger(Service.class.getName());
 
@@ -89,6 +92,8 @@ public class Service implements Daemon {
 			zeitplanverwalter.start();
 			tempratureReceiver.startListener();
 			networkControl.start();
+			mqttListener = new MqttListener("localhost", "heizung");
+			mqttListener.subscribeValves(ventilverwalter);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			throw e;
@@ -105,6 +110,11 @@ public class Service implements Daemon {
 		}
 		try {
 			networkControl.close();
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		}
+		try {
+			mqttListener.close();
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
