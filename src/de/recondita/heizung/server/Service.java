@@ -92,7 +92,7 @@ public class Service implements Daemon {
 			zeitplanverwalter.start();
 			tempratureReceiver.startListener();
 			networkControl.start();
-			mqttListener = new MqttListener("localhost", "heizung");
+			mqttListener = new MqttListener("tcp://localhost:1883", "heizung");
 			mqttListener.subscribeValves(ventilverwalter);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
