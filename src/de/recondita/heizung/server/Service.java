@@ -11,6 +11,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.xml.sax.SAXException;
 
 import de.recondita.heizung.server.control.Ventilverwalter;
@@ -25,19 +26,17 @@ import de.recondita.heizung.xml.ConfigLoader.PunktOrderException;
 public class Service implements Daemon {
 
 	private ZeitplanVerwalter zeitplanverwalter;
-	private static Ventilverwalter ventilverwalter = Ventilverwalter
-			.getInstance();
+	private static Ventilverwalter ventilverwalter = Ventilverwalter.getInstance();
 	private NetworkControl networkControl;
-	
+
 	private TempratureReceiver tempratureReceiver;
-	
+
 	private MqttListener mqttListener;
 
 	private final static Logger LOGGER = Logger.getLogger(Service.class.getName());
 
-	public static void main(String[] args) throws FileNotFoundException,
-			XPathExpressionException, IOException, SAXException,
-			PunktOrderException, ParserConfigurationException {
+	public static void main(String[] args) throws FileNotFoundException, XPathExpressionException, IOException,
+			SAXException, PunktOrderException, ParserConfigurationException {
 		createZeitplanVerwalter(args).start();
 	}
 
@@ -49,28 +48,27 @@ public class Service implements Daemon {
 	@Override
 	public void init(DaemonContext context) throws Exception {
 		try {
-			this.zeitplanverwalter = createZeitplanVerwalter(context
-					.getArguments());
+			this.zeitplanverwalter = createZeitplanVerwalter(context.getArguments());
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			throw e;
 		}
 		try {
-			networkControl = new NetworkControl(80,ventilverwalter);
+			networkControl = new NetworkControl(80, ventilverwalter);
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
 		try {
 			tempratureReceiver = new TempratureReceiver(new TempratureCallBack() {
-				
+
 				@Override
 				public void updateTemp(String room, float temp) {
-					ventilverwalter.setTemprature(room,temp);					
+					ventilverwalter.setTemprature(room, temp);
 				}
-				
+
 				@Override
 				public void updateHumidity(String room, float temp) {
-					ventilverwalter.setHumidity(room,temp);
+					ventilverwalter.setHumidity(room, temp);
 				}
 			});
 		} catch (Exception e) {
@@ -78,12 +76,10 @@ public class Service implements Daemon {
 		}
 	}
 
-	private static ZeitplanVerwalter createZeitplanVerwalter(String[] args)
-			throws FileNotFoundException, XPathExpressionException,
-			IOException, SAXException, PunktOrderException,
-			ParserConfigurationException {
-		return new ZeitplanVerwalter(ventilverwalter, new ConfigLoader(new File(
-				args.length == 0 ? "config" : args[0])));
+	private static ZeitplanVerwalter createZeitplanVerwalter(String[] args) throws FileNotFoundException,
+			XPathExpressionException, IOException, SAXException, PunktOrderException, ParserConfigurationException {
+		return new ZeitplanVerwalter(ventilverwalter,
+				new ConfigLoader(new File(args.length == 0 ? "config" : args[0])));
 	}
 
 	@Override
@@ -92,7 +88,14 @@ public class Service implements Daemon {
 			zeitplanverwalter.start();
 			tempratureReceiver.startListener();
 			networkControl.start();
-			mqttListener = new MqttListener("tcp://localhost:1883", "heizung", ventilverwalter);
+			while (mqttListener == null) {
+				try {
+					mqttListener = new MqttListener("tcp://localhost:1883", "heizung", ventilverwalter);
+				} catch (MqttException e) {
+					LOGGER.log(Level.SEVERE, e.getMessage(), e);
+					Thread.sleep(10000L);
+				}
+			}
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			throw e;
