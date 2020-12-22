@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -17,24 +20,54 @@ public class MqttListener implements Closeable {
 
 	private final static Logger LOGGER = Logger.getLogger(MqttListener.class.getName());
 
-	MqttClient mqttClient;
+	private MqttClient mqttClient;
 
-	public MqttListener(String broker, String clientId) throws MqttException {
+	public MqttListener(String broker, String clientId, Iterable<Ventil> valves) throws MqttException {
 		mqttClient = new MqttClient(broker, clientId, new MemoryPersistence());
-		mqttClient.connect();
+		mqttClient.setCallback(new MqttCallbackExtended() {
+			
+			@Override
+			public void messageArrived(String topic, MqttMessage message) throws Exception {
+				LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());			
+			}
+			
+			@Override
+			public void deliveryComplete(IMqttDeliveryToken token) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void connectionLost(Throwable cause) {
+				LOGGER.log(Level.SEVERE, "MQTT: connection lost");				
+			}
+			
+			@Override
+			public void connectComplete(boolean reconnect, String serverURI) {
+				try {
+					subscribeValves(valves);
+				} catch (MqttException e) {
+					LOGGER.log(Level.SEVERE, e.getMessage(), e);
+				}
+				LOGGER.log(Level.SEVERE, "MQTT: connection complete");
+			}
+		});
+		MqttConnectOptions conOpt = new MqttConnectOptions();
+		conOpt.setAutomaticReconnect(true);
+		mqttClient.connect(conOpt);
 	}
 
-	public void subscribeValve(Ventil valve) throws MqttException {
+	private void subscribeValve(Ventil valve) throws MqttException {
 		String basetopic = "home/" + valve.getName().toLowerCase() + "/sensor/";
 		String tempTopic = basetopic + "temprature";
 		String humTopic = basetopic + "humidity";
 
-		LOGGER.log(Level.INFO, "subscribing to: " + tempTopic);
+		LOGGER.log(Level.INFO, "MQTT: subscribing to: " + tempTopic);
 		mqttClient.subscribe(tempTopic, new IMqttMessageListener() {
 			@Override
 			public void messageArrived(String topic, MqttMessage message) {
+				LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());
 				try {
-					LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());
 					valve.setCurrentTemp(Float.parseFloat(message.toString()));
 				} catch (Exception e) {
 					LOGGER.log(Level.SEVERE, e.getMessage(), e);
@@ -42,13 +75,13 @@ public class MqttListener implements Closeable {
 			}
 		});
 
-		LOGGER.log(Level.INFO, "subscribing to: " + humTopic);
+		LOGGER.log(Level.INFO, "MQTT: subscribing to: " + humTopic);
 		mqttClient.subscribe(humTopic, new IMqttMessageListener() {
 
 			@Override
 			public void messageArrived(String topic, MqttMessage message) {
+				LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());
 				try {
-					LOGGER.log(Level.INFO, "MQTT: " + topic + " " + message.toString());
 					valve.setCurrentHumidity(Float.parseFloat(message.toString()));
 				} catch (Exception e) {
 					LOGGER.log(Level.SEVERE, e.getMessage(), e);
@@ -57,7 +90,7 @@ public class MqttListener implements Closeable {
 		});
 	}
 
-	public void subscribeValves(Iterable<Ventil> valves) throws MqttException {
+	private void subscribeValves(Iterable<Ventil> valves) throws MqttException {
 		for (Ventil v : valves)
 			subscribeValve(v);
 	}
