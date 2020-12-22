@@ -25,8 +25,12 @@ public class MqttListener implements Closeable{
 	}
 	
 	public void subscribeValve(Ventil valve) throws MqttException {
-		String topic = "home/" + valve.getName().toLowerCase() + "/sensor/";
-		mqttClient.subscribe(topic + "temprature", new IMqttMessageListener() {
+		String basetopic = "home/" + valve.getName().toLowerCase() + "/sensor/";
+		String tempTopic = basetopic + "temprature";
+		String humTopic = basetopic + "humidity";
+		
+		LOGGER.log(Level.INFO,"subscribing to: " + tempTopic);
+		mqttClient.subscribe(tempTopic, new IMqttMessageListener() {
 			
 			@Override
 			public void messageArrived(String topic, MqttMessage message) throws Exception {
@@ -34,8 +38,8 @@ public class MqttListener implements Closeable{
 				valve.setCurrentTemp(Float.parseFloat(message.toString()));
 			}
 		});
-		
-		mqttClient.subscribe(topic + "humidity", new IMqttMessageListener() {
+		LOGGER.log(Level.INFO,"subscribing to: " + humTopic);
+		mqttClient.subscribe(humTopic, new IMqttMessageListener() {
 			
 			@Override
 			public void messageArrived(String topic, MqttMessage message) throws Exception {
