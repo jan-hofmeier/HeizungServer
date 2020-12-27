@@ -131,7 +131,7 @@ public class ZeitplanVerwalter implements Closeable {
 							ventil.setPlanOn(targetTemp > currentTemp);
 					}
 					
-					if (Math.abs(targetTemp - currentTemp) > 0.2)
+					if (Math.abs(targetTemp - currentTemp) > 0.22)
 						ventil.setPlanOn(targetTemp > currentTemp);
 				}
 			} else
