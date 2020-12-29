@@ -1,5 +1,5 @@
 #include <ESP8266WiFi.h>
-#include "wifisettingsTobi.h"
+#include "wifisettingsJan.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -90,6 +90,11 @@ void setup() {
   
   setDebugLED(true);
 
+  OneWire oneWire(oneWireBus);
+  DallasTemperature sensors(&oneWire);
+  sensors.requestTemperatures();
+  float temperature = sensors.getTempCByIndex(0);
+
   //Kontrollausgabe aktivieren
   Serial.println();
   Serial.print("Versuche Verbindung zum AP mit der SSID=");
@@ -123,14 +128,12 @@ void setup() {
       break;
   }
 
-  OneWire oneWire(oneWireBus);
-  DallasTemperature sensors(&oneWire);
-  sensors.requestTemperatures();
-  float temperature = sensors.getTempCByIndex(0);
-
   /*Solange keineVerbindung zu einem AccessPoint (AP) aufgebaut wurde*/
   bool ledon = 1;
+  int i=20;
   while (WiFi.status() != WL_CONNECTED) {
+    if(!i--)
+      return;
     setDebugLED(ledon = !ledon);
     delay(500);
     Serial.print(".");
@@ -150,7 +153,6 @@ void setup() {
   Serial.println(" dBm");
 
   WiFiClient client;
-  int i;
   for(i=RETRIES; !client.connect(HOST, serverPort)&& (i>0); i-- ) {
     Serial.print("X");
     delay(1000);
