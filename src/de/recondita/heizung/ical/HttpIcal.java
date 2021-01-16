@@ -105,6 +105,8 @@ public class HttpIcal {
 
 	private String requestCalendarStr() throws IOException {
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(20000);
 		con.setRequestMethod("GET");
 		con.setInstanceFollowRedirects(true);
 		int status = con.getResponseCode();
