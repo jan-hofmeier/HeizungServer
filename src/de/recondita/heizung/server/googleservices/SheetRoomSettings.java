@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -46,7 +46,7 @@ public class SheetRoomSettings {
 		this.backupFile = backupFile;
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 		credentials = credentials.createScoped(SheetsScopes.SPREADSHEETS);
-		final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+		final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 		service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpCredentialsAdapter(credentials))
 				.setApplicationName(applicationName).build();
 		if (backupFile != null && backupFile.exists()) {
