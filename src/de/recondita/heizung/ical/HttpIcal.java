@@ -152,10 +152,9 @@ public class HttpIcal {
 		if (calendarStr.equals(lastCalendarStr))
 			return calendar;
 
-		lastCalendarStr = calendarStr;
-
 		try {
 			setCalendar(calendarStr);
+			lastCalendarStr = calendarStr;
 			// save the new version of the calendar only if it changed and is parseable.
 			if (backupFile != null)
 				saveToBackupFile(calendarStr);
