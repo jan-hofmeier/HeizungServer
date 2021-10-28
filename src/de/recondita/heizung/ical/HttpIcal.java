@@ -19,10 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -171,7 +171,7 @@ public class HttpIcal {
 		return calendar;
 	}
 
-	public List<String> getActiveGroups() throws IOException, ParserException {
+	public Set<String> getActiveGroups() throws IOException, ParserException {
 		LOGGER.log(Level.INFO, "getting calendar for room " + room);
 		
 		Calendar calendar = getCalendar();
@@ -201,12 +201,12 @@ public class HttpIcal {
 		}
 		eventsNow.removeAll(removed);
 
-		if (room != null && !eventsNow.isEmpty()) {
-			return Arrays.asList(room);
-		}
-
 		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase())
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 
+	}
+
+	public String getRoom() {
+		return room;
 	}
 }

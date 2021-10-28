@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -82,13 +83,15 @@ public class ZeitplanVerwalter implements Closeable {
 	}
 
 	private void checkICal() throws IOException, ParserException, CsvException {
-		Set<String> activeSchedules = new HashSet<>();
+		Map<String, Set<String>> activeRoomSchedules = new HashMap<>();
+		Set<String> activeGroups = new HashSet<>();
 		for (HttpIcal ical : iCalPlaene) {
-			activeSchedules.addAll(ical.getActiveGroups());
+			Set<String> a = ical.getActiveGroups();
+			if (ical.getRoom() != null)
+				activeRoomSchedules.put(ical.getRoom(), a);
+			else
+				activeGroups = a;
 		}
-
-		activeSchedules.add("an");
-		activeSchedules.add("on");
 
 		Map<String, Float> tempratures = thermometers.getTempratures();
 		long now = System.currentTimeMillis();
@@ -96,15 +99,25 @@ public class ZeitplanVerwalter implements Closeable {
 		for (Room room : roomSettings.getRoomSettings()) {
 
 			float activeTemp = room.getOntemp();
-			boolean active = activeSchedules.contains(room.getName().toLowerCase());
-
-			if (!active)
+			boolean active = activeGroups.contains(room.getName().toLowerCase());
+			
+			for (Activation activation : room.getActivations()) {
+				if (activeGroups.contains(activation.getName())) {
+					activeTemp = activation.getTemp();
+					active = true;
+				}
+			}
+			
+			Set<String> roomSchedule = activeRoomSchedules.get(room.getName());
+			if(roomSchedule!=null && !roomSchedule.isEmpty()) {
+				activeTemp = room.getOntemp();
+				active=true;
 				for (Activation activation : room.getActivations()) {
-					if (activeSchedules.contains(activation.getName())) {
+					if (roomSchedule.contains(activation.getName())) {
 						activeTemp = activation.getTemp();
-						active = true;
 					}
 				}
+			}
 
 			Ventil ventil = ventile.getVentilByName(room.getName());
 			if (ventil != null) {
@@ -130,7 +143,7 @@ public class ZeitplanVerwalter implements Closeable {
 						else
 							ventil.setPlanOn(targetTemp > currentTemp);
 					}
-					
+
 					if (Math.abs(targetTemp - currentTemp) > 0.22)
 						ventil.setPlanOn(targetTemp > currentTemp);
 				}
