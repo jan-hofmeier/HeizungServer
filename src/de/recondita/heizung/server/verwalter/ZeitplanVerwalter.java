@@ -108,7 +108,7 @@ public class ZeitplanVerwalter implements Closeable {
 				}
 			}
 			
-			Set<String> roomSchedule = activeRoomSchedules.get(room.getName());
+			Set<String> roomSchedule = activeRoomSchedules.get(room.getName().toLowerCase());
 			if(roomSchedule!=null && !roomSchedule.isEmpty()) {
 				activeTemp = room.getOntemp();
 				active=true;
