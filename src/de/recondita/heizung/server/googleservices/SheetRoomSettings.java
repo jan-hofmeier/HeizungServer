@@ -116,6 +116,7 @@ public class SheetRoomSettings {
 
 			rooms.add(new Room(name, onTemp, offTemp, activations));
 		}
+		lastValues = values;
 	}
 
 	public void loadFromBackupFile() throws FileNotFoundException, IOException, CsvException {
@@ -141,9 +142,6 @@ public class SheetRoomSettings {
 
 		if (values.equals(lastValues))
 			return rooms;
-		
-
-		lastValues = values;
 
 		setRooms(values);
 
