@@ -11,8 +11,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import de.recondita.heizung.server.control.Ventilverwalter;
 import de.recondita.heizung.server.network.MqttListener;
 import de.recondita.heizung.server.network.NetworkControl;
-import de.recondita.heizung.server.network.TempratureReceiver;
-import de.recondita.heizung.server.network.TempratureReceiver.TempratureCallBack;
 import de.recondita.heizung.server.verwalter.ZeitplanVerwalter;
 import de.recondita.heizung.xml.ConfigLoader;
 
@@ -21,8 +19,6 @@ public class Service implements Daemon {
 	private ZeitplanVerwalter zeitplanverwalter;
 	private static Ventilverwalter ventilverwalter = Ventilverwalter.getInstance();
 	private NetworkControl networkControl;
-
-	private TempratureReceiver tempratureReceiver;
 
 	private MqttListener mqttListener;
 	private ConfigLoader configLoader;
@@ -49,29 +45,12 @@ public class Service implements Daemon {
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
-		try {
-			tempratureReceiver = new TempratureReceiver(new TempratureCallBack() {
-
-				@Override
-				public void updateTemp(String room, float temp) {
-					ventilverwalter.setTemprature(room, temp);
-				}
-
-				@Override
-				public void updateHumidity(String room, float temp) {
-					ventilverwalter.setHumidity(room, temp);
-				}
-			});
-		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-		}
 	}
 
 	@Override
 	public void start() throws Exception {
 		try {
 			zeitplanverwalter.start();
-			tempratureReceiver.startListener();
 			networkControl.start();
 			String[] mqttConfig = configLoader.loadMQTTConfig();
 			if (mqttConfig != null)
@@ -92,11 +71,6 @@ public class Service implements Daemon {
 
 	@Override
 	public void stop() throws Exception {
-		try {
-			tempratureReceiver.close();
-		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-		}
 		try {
 			networkControl.close();
 		} catch (Exception e) {
