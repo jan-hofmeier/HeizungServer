@@ -229,7 +229,7 @@ public class ConfigLoader {
 		if (mqttfile.exists()) {
 			LOGGER.info("Found MQTT config: " + mqttfile);
 			try (BufferedReader br = new BufferedReader(new FileReader(mqttfile))) {
-				ret = new String[3];
+				ret = new String[4];
 				for (int i = 0; i < ret.length; i++) {
 					ret[i] = br.readLine(); // username
 				}
