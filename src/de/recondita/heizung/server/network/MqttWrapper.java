@@ -113,12 +113,14 @@ public class MqttWrapper implements Closeable {
 	}
 
 	private void tryPublishValveValue(String name, float value) {
-		String topic = "climate/" + appartment + "/" + name.toLowerCase() + "/valve";
+		String topic = "heating/fb/" + appartment + "/" + name.toLowerCase() + "/valve";
+		LOGGER.log(Level.INFO, "Publish: " + topic + " " + value);
 		try {
-			mqttClient.publish(topic, String.valueOf(value).getBytes(), 0, true);
+			mqttClient.publish(topic, String.valueOf(value).getBytes(), 1, true);
 		} catch (MqttException e) {
-			e.printStackTrace();
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
+		LOGGER.log(Level.INFO, "finished publish");
 	}
 
 	@Override
