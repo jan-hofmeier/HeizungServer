@@ -16,14 +16,14 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import de.recondita.heizung.server.control.Ventil;
 
-public class MqttListener implements Closeable {
+public class MqttWrapper implements Closeable {
 
-	private final static Logger LOGGER = Logger.getLogger(MqttListener.class.getName());
+	private final static Logger LOGGER = Logger.getLogger(MqttWrapper.class.getName());
 
 	private MqttClient mqttClient;
 	private String appartment; 
 
-	public MqttListener(String[] config, Iterable<Ventil> valves) throws MqttException {
+	public MqttWrapper(String[] config, Iterable<Ventil> valves) throws MqttException {
 		appartment = config[3];
 		mqttClient = new MqttClient(config[0], config[1], new MemoryPersistence());
 		mqttClient.setCallback(new MqttCallbackExtended() {

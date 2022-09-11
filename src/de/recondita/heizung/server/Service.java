@@ -9,7 +9,7 @@ import org.apache.commons.daemon.DaemonContext;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import de.recondita.heizung.server.control.Ventilverwalter;
-import de.recondita.heizung.server.network.MqttListener;
+import de.recondita.heizung.server.network.MqttWrapper;
 import de.recondita.heizung.server.network.NetworkControl;
 import de.recondita.heizung.server.verwalter.ZeitplanVerwalter;
 import de.recondita.heizung.xml.ConfigLoader;
@@ -20,7 +20,7 @@ public class Service implements Daemon {
 	private static Ventilverwalter ventilverwalter = Ventilverwalter.getInstance();
 	private NetworkControl networkControl;
 
-	private MqttListener mqttListener;
+	private MqttWrapper mqttListener;
 	private ConfigLoader configLoader;
 
 	private final static Logger LOGGER = Logger.getLogger(Service.class.getName());
@@ -56,7 +56,7 @@ public class Service implements Daemon {
 			if (mqttConfig != null)
 				while (mqttListener == null) {
 					try {
-						mqttListener = new MqttListener(mqttConfig, ventilverwalter);
+						mqttListener = new MqttWrapper(mqttConfig, ventilverwalter);
 					} catch (MqttException e) {
 						LOGGER.log(Level.SEVERE, e.getMessage(), e);
 						Thread.sleep(10000L);
