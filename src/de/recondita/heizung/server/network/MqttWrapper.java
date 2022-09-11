@@ -21,11 +21,12 @@ public class MqttWrapper implements Closeable {
 	private final static Logger LOGGER = Logger.getLogger(MqttWrapper.class.getName());
 
 	private MqttClient mqttClient;
-	private String appartment; 
+	private String appartment;
 
 	public MqttWrapper(String[] config, Iterable<Ventil> valves) throws MqttException {
 		appartment = config[3];
 		mqttClient = new MqttClient(config[0], config[1], new MemoryPersistence());
+		setupPublishValveChanges(valves);
 		mqttClient.setCallback(new MqttCallbackExtended() {
 
 			@Override
@@ -46,6 +47,9 @@ public class MqttWrapper implements Closeable {
 
 			@Override
 			public void connectComplete(boolean reconnect, String serverURI) {
+				for (Ventil v : valves) {
+					tryPublishValveValue(v.getName(), v.getValue());
+				}
 				try {
 					subscribeValves(valves);
 				} catch (MqttException e) {
@@ -100,6 +104,21 @@ public class MqttWrapper implements Closeable {
 	private void subscribeValves(Iterable<Ventil> valves) throws MqttException {
 		for (Ventil v : valves)
 			subscribeValve(v);
+	}
+
+	private void setupPublishValveChanges(Iterable<Ventil> valves) {
+		for (Ventil v : valves) {
+			v.registerCallback((value) -> tryPublishValveValue(v.getName(), value));
+		}
+	}
+
+	private void tryPublishValveValue(String name, float value) {
+		String topic = "climate/" + appartment + "/" + name.toLowerCase() + "/valve";
+		try {
+			mqttClient.publish(topic, String.valueOf(value).getBytes(), 0, true);
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

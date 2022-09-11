@@ -2,6 +2,8 @@ package de.recondita.heizung.server.control;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gson.JsonObject;
@@ -18,6 +20,7 @@ public class Ventil {
 	private volatile long lastTempUpdate;
 	private float targetTemp;
 	private volatile float currentHumidity = -1;
+	private List<VentilChangeCallback> changeCallbacks = new ArrayList<>();
 
 	private final Object lock = new Object();
 
@@ -69,6 +72,11 @@ public class Ventil {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			synchronized (changeCallbacks) {
+				for (VentilChangeCallback cb : changeCallbacks) {
+					cb.handleVentilChanged(getValue());
+				}
+			}
 		}
 	}
 
@@ -81,7 +89,13 @@ public class Ventil {
 	}
 
 	public boolean isOn() {
-		return gpioOn;
+		synchronized (lock) {
+			return gpioOn;
+		}
+	}
+
+	public float getValue() {
+		return gpioOn ? 1 : 0;
 	}
 
 	public float getTargetTemp() {
@@ -99,7 +113,7 @@ public class Ventil {
 	public long getLastTempUpdate() {
 		return lastTempUpdate;
 	}
-	
+
 	public float getCurrentTemp() {
 		return currentTemp;
 	}
@@ -108,7 +122,7 @@ public class Ventil {
 		this.currentTemp = currentTemp;
 		this.lastTempUpdate = System.currentTimeMillis();
 	}
-	
+
 	public float getCurrentHumidity() {
 		return currentHumidity;
 	}
@@ -127,5 +141,15 @@ public class Ventil {
 		json.addProperty("on", isOn());
 		return json;
 	}
-	
+
+	public void registerCallback(VentilChangeCallback cb) {
+		synchronized (changeCallbacks) {
+			changeCallbacks.add(cb);
+		}
+	}
+
+	public interface VentilChangeCallback {
+		public void handleVentilChanged(float value);
+	}
+
 }
