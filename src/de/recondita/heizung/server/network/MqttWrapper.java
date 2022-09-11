@@ -116,6 +116,7 @@ public class MqttWrapper implements Closeable {
 		String topic = "heating/fb/" + appartment + "/" + name.toLowerCase() + "/valve";
 		LOGGER.log(Level.INFO, "Publish: " + topic + " " + value);
 		try {
+			//qos 0 causes deadlock
 			mqttClient.publish(topic, String.valueOf(value).getBytes(), 1, true);
 		} catch (MqttException e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
