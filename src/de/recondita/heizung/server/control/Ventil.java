@@ -13,21 +13,19 @@ public class Ventil {
 	private Mode mode = Mode.PLAN;
 	private String name;
 	private int gpio;
-	private Ventilverwalter ventilverwalter;
 	private long lastChanged;
 	private volatile float currentTemp;
 	private volatile long lastTempUpdate;
 	private float targetTemp;
 	private volatile float currentHumidity = -1;
 
-	private static final Object lock = new Object();
+	private final Object lock = new Object();
 
 	private final static Logger LOGGER = Logger.getLogger(Ventilverwalter.class.getName());
 
-	public Ventil(int gpio, String name, Ventilverwalter ventilverwalter) {
+	public Ventil(int gpio, String name) {
 		this.gpio = gpio;
 		this.name = name;
-		this.ventilverwalter = ventilverwalter;
 		setValue();
 	}
 
@@ -59,7 +57,6 @@ public class Ventil {
 	private void setValue() {
 		synchronized (lock) {
 			gpioOn = mode == Mode.ON || (mode == Mode.PLAN && planOn);
-			ventilverwalter.notifyChange(this);
 			if (gpio >= 0)
 				try (FileWriter fw = new FileWriter("/sys/class/gpio/gpio" + gpio + "/value");) {
 					fw.write(gpioOn ? "1" : "0");

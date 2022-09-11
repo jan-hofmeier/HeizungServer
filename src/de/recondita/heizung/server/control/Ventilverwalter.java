@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,8 +20,6 @@ public class Ventilverwalter implements Iterable<Ventil> {
 
 	private final Map<Integer, Ventil> gpioMap = new HashMap<Integer, Ventil>();
 	private final Map<String, Ventil> nameMap = new HashMap<String, Ventil>();
-
-	private ArrayList<VentilStateListener> listener = new ArrayList<VentilStateListener>();
 
 	private final static Logger LOGGER = Logger.getLogger(Ventilverwalter.class.getName());
 
@@ -51,7 +48,7 @@ public class Ventilverwalter implements Iterable<Ventil> {
 			LOGGER.severe("GPIO already in use: " + pin);
 		} else
 			enable(pin);
-		v = new Ventil(pin, name, this);
+		v = new Ventil(pin, name);
 		gpioMap.put(pin, v);
 		nameMap.put(name, v);
 		LOGGER.info("Ventil " + name + " erstellt");
@@ -122,20 +119,6 @@ public class Ventilverwalter implements Iterable<Ventil> {
 		}
 		gpioMap.clear();
 		nameMap.clear();
-	}
-
-	void notifyChange(Ventil v) {
-		synchronized (listener) {
-			for (VentilStateListener l : listener) {
-				l.stateChanged(v.getName(), v.getMode(), v.isOn());
-			}
-		}
-	}
-
-	public void addChangeListener(VentilStateListener l) {
-		synchronized (listener) {
-			listener.add(l);
-		}
 	}
 
 	@Override
