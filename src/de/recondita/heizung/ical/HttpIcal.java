@@ -18,10 +18,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -31,14 +33,15 @@ import java.util.stream.Collectors;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.filter.Filter;
-import net.fortuna.ical4j.filter.PeriodRule;
+import net.fortuna.ical4j.filter.predicate.PeriodRule;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentGroup;
-import net.fortuna.ical4j.model.DateRange;
-import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.DtEnd;
+import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.util.MapTimeZoneCache;
 
@@ -78,7 +81,7 @@ public class HttpIcal {
 				LOGGER.log(Level.WARNING, e.getMessage(), e);
 			}
 		} else {
-			LOGGER.info("No Backup file " + backupFile.getName());
+			LOGGER.info("No Backup file " + (backupFile != null ? backupFile.getName() : "<none>"));
 		}
 	}
 
@@ -104,14 +107,17 @@ public class HttpIcal {
 	}
 
 	private String requestCalendarStr() throws IOException {
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setConnectTimeout(10000);
-		con.setReadTimeout(20000);
-		con.setRequestMethod("GET");
-		con.setInstanceFollowRedirects(true);
-		int status = con.getResponseCode();
-		if (status != 200) {
-			throw new IOException("Non 200 status Code: " + status);
+		java.net.URLConnection con = url.openConnection();
+		if (con instanceof HttpURLConnection) {
+			HttpURLConnection httpCon = (HttpURLConnection) con;
+			httpCon.setConnectTimeout(10000);
+			httpCon.setReadTimeout(20000);
+			httpCon.setRequestMethod("GET");
+			httpCon.setInstanceFollowRedirects(true);
+			int status = httpCon.getResponseCode();
+			if (status != 200) {
+				throw new IOException("Non 200 status Code: " + status);
+			}
 		}
 		return convert(con.getInputStream());
 	}
@@ -176,9 +182,9 @@ public class HttpIcal {
 		
 		Calendar calendar = getCalendar();
 
-		DateTime now = new DateTime(java.util.Calendar.getInstance().getTime());
+		ZonedDateTime now = ZonedDateTime.now();
 
-		Period period = new Period(now, now);
+		Period<ZonedDateTime> period = new Period<>(now, now);
 		Predicate<VEvent> periodRule = new PeriodRule<>(period);
 		Filter<VEvent> filter = new Filter<>(periodRule);
 
@@ -187,13 +193,21 @@ public class HttpIcal {
 		// Handle Recurrent Events with changed time for single instance
 		List<VEvent> removed = new ArrayList<>();
 		for (VEvent event : eventsNow) {
-			Date start = event.calculateRecurrenceSet(period).stream().findFirst().get().getStart();
-			ComponentGroup<VEvent> group = new ComponentGroup<>(calendar.getComponents(Component.VEVENT),
-					event.getUid());
+			// calculateRecurrenceSet returns a Set<Period<Instant>> (or similar)
+			Set<?> recurrences = event.calculateRecurrenceSet(period);
+			if (recurrences.isEmpty()) {
+			    continue;
+			}
+			Period<?> p = (Period<?>) recurrences.stream().findFirst().get();
+			Temporal start = p.getStart();
+			
+			ComponentGroup<VEvent> group = new ComponentGroup<VEvent>(
+					new ArrayList<>(calendar.getComponents(Component.VEVENT)),
+					event.getUid().orElse(null));
 			for (VEvent revision : group.getRevisions()) {
-				RecurrenceId recurrenceid = revision.getRecurrenceId();
+				RecurrenceId<Temporal> recurrenceid = revision.getRecurrenceId();
 				if (recurrenceid != null && start.equals(recurrenceid.getDate()) && !period.intersects(
-						new DateRange(revision.getStartDate().getDate(), revision.getEndDate().getDate()))) {
+						new Period<>(revision.getStartDate().get().getDate(), revision.getEndDate().get().getDate()))) {
 					removed.add(event);
 					LOGGER.log(Level.FINE, "Found moved event: " + event.getName());
 				}
@@ -201,7 +215,10 @@ public class HttpIcal {
 		}
 		eventsNow.removeAll(removed);
 
-		return eventsNow.stream().map((event) -> event.getProperty("SUMMARY").getValue().toLowerCase())
+		return eventsNow.stream()
+				.map((event) -> event.getProperty("SUMMARY"))
+				.filter(Optional::isPresent)
+				.map(p -> p.get().getValue().toLowerCase())
 				.collect(Collectors.toSet());
 
 	}
