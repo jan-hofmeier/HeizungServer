@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -26,7 +27,6 @@ public class MqttWrapper implements Closeable {
 	public MqttWrapper(String[] config, Iterable<Ventil> valves) throws MqttException {
 		appartment = config[3];
 		mqttClient = new MqttClient(config[0], config[1], new MemoryPersistence());
-		setupPublishValveChanges(valves);
 		mqttClient.setCallback(new MqttCallbackExtended() {
 
 			@Override
@@ -47,14 +47,16 @@ public class MqttWrapper implements Closeable {
 
 			@Override
 			public void connectComplete(boolean reconnect, String serverURI) {
-				for (Ventil v : valves) {
-					tryPublishValveValue(v.getName(), v.getValue());
-				}
-				try {
-					subscribeValves(valves);
-				} catch (MqttException e) {
-					LOGGER.log(Level.SEVERE, e.getMessage(), e);
-				}
+				new Thread(() -> {
+					for (Ventil v : valves) {
+						tryPublishValveValue(v.getName(), v.getValue());
+					}
+					try {
+						subscribeValves(valves);
+					} catch (MqttException e) {
+						LOGGER.log(Level.SEVERE, e.getMessage(), e);
+					}
+			    }).start();
 				LOGGER.log(Level.SEVERE, "MQTT: connection complete");
 			}
 		});
@@ -65,6 +67,8 @@ public class MqttWrapper implements Closeable {
 			conOpt.setUserName(config[1]);
 			conOpt.setPassword(config[2].toCharArray());
 		}
+		setupPublishValveChanges(valves);
+		LOGGER.log(Level.INFO, "MQTT: connecting");
 		mqttClient.connect(conOpt);
 	}
 
