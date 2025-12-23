@@ -20,8 +20,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -38,10 +40,7 @@ import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentGroup;
 import net.fortuna.ical4j.model.Period;
-import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.property.DtEnd;
-import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.util.MapTimeZoneCache;
 
@@ -57,7 +56,9 @@ public class HttpIcal {
 	private URL url;
 
 	private Calendar calendar;
-	private String lastCalendarStr;
+	// The order of the events in the file is random in every request.
+	// So we need to sort it to compare it for changes.
+	private List<String> lastCalendarSorted;
 
 	private File backupFile;
 
@@ -84,11 +85,16 @@ public class HttpIcal {
 			LOGGER.info("No Backup file " + (backupFile != null ? backupFile.getName() : "<none>"));
 		}
 	}
+	
+	private List<String> sortedLines(String str){
+		List<String> lineList = Arrays.asList(str.split("\n"));
+		Collections.sort(lineList);
+		return lineList;
+	}
 
 	private void setCalendar(String calendarStr) throws ParserException {
 		try (Reader reader = new StringReader(calendarStr)) {
 			calendar = new CalendarBuilder().build(reader);
-			lastCalendarStr = calendarStr;
 		} catch (IOException e) {
 			// that wont happen
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -96,7 +102,9 @@ public class HttpIcal {
 	}
 
 	private void loadFromBackupFile() throws FileNotFoundException, IOException, ParserException {
-		setCalendar(readCalendarStrFromFile());
+		String calStr = readCalendarStrFromFile();
+		setCalendar(calStr);
+		lastCalendarSorted = sortedLines(calStr);
 	}
 
 	private static String convert(InputStream inputStream) throws IOException {
@@ -133,7 +141,7 @@ public class HttpIcal {
 		Path tmpFile = backupPath.resolveSibling("~" + backupPath.getFileName());
 		try (BufferedWriter bw = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(tmpFile.toFile()), DEFAULT_CHARSET))) {
-			bw.write(lastCalendarStr);
+			bw.write(calendarStr);
 		}
 		Files.move(tmpFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
 	}
@@ -145,7 +153,7 @@ public class HttpIcal {
 		} catch (IOException e) {
 			LOGGER.severe("Can not get Calendar from " + url);
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
-			if (lastCalendarStr != null)
+			if (lastCalendarSorted != null)
 				return calendar;
 			throw e;
 		}
@@ -155,12 +163,13 @@ public class HttpIcal {
 		calendarStr = calendarStr.replaceAll("DTSTAMP:[\\d]{8}T[\\d]{6}Z\n", "");
 
 		// no need to reparse if it didn't change
-		if (calendarStr.equals(lastCalendarStr))
+		List<String> newSorted = sortedLines(calendarStr);
+		if (newSorted.equals(lastCalendarSorted))
 			return calendar;
 
 		try {
 			setCalendar(calendarStr);
-			lastCalendarStr = calendarStr;
+			lastCalendarSorted = newSorted;
 			// save the new version of the calendar only if it changed and is parseable.
 			if (backupFile != null)
 				saveToBackupFile(calendarStr);
