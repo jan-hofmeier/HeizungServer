@@ -1,0 +1,15 @@
+[package]
+name = "heizung-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rppal = "0.17.1"
+tokio = { version = "1", features = ["full"] }
+axum = "0.7.5"
+rumqttc = "0.24.0"
+serde = { version = "1.0", features = ["derive"] }
+config = "0.14.0"
+ical = "2.0.0"
+serde_json = "1.0"
+anyhow = "1.0"
